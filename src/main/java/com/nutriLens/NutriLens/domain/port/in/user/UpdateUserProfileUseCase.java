@@ -1,4 +1,5 @@
 package com.nutriLens.NutriLens.domain.port.in.user;
 
-public interface ChangeUserGoalUseCase {
+public interface UpdateUserProfileUseCase {
+    void execute(Long userId, UpdateUserProfileCommand command);
 }

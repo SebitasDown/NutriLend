@@ -1,22 +1,41 @@
 package com.nutriLens.NutriLens.application.service.recipe;
 
-import com.nutriLens.NutriLens.domain.model.Recipe;
-import com.nutriLens.NutriLens.domain.model.TypeFood;
+import com.nutriLens.NutriLens.application.exception.NotFound;
+import com.nutriLens.NutriLens.domain.model.*;
 import com.nutriLens.NutriLens.domain.port.in.recipe.GetRecipesForUserUseCase;
 import com.nutriLens.NutriLens.domain.port.out.RecipeRepository;
+import com.nutriLens.NutriLens.domain.port.out.UserRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-public class GetRecipesByTypeFoodUseCase implements GetRecipesForUserUseCase {
+@Service
+public class GetRecipesForUserUseCaseImpl implements GetRecipesForUserUseCase {
 
     private final RecipeRepository recipeRepository;
+    private final UserRepository userRepository;
 
-    public GetRecipesByTypeFoodUseCase(RecipeRepository recipeRepository) {
+    public GetRecipesForUserUseCaseImpl(RecipeRepository recipeRepository, UserRepository userRepository) {
         this.recipeRepository = recipeRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     public List<Recipe> execute(Long userId, TypeFood typeFood) {
-        return recipeRepository.findByGoalAndTypeFood(userId, typeFood);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFound("Usuario no encontrado"));
+
+        Goal goal = user.getGoal();
+        Preference preference = user.getPreference();
+
+        List<Recipe> recipes = recipeRepository.findByGoalAndTypeFood(goal, typeFood);
+
+        if (preference == Preference.VEGETARIANO){
+            return recipes.stream()
+                    .filter(Recipe::isVegetarian)
+                    .toList();
+        }
+
+        return recipes;
     }
 }

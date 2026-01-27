@@ -5,7 +5,9 @@ import com.nutriLens.NutriLens.domain.model.User;
 import com.nutriLens.NutriLens.domain.port.in.user.UpdateUserProfileCommand;
 import com.nutriLens.NutriLens.domain.port.in.user.UpdateUserProfileUseCase;
 import com.nutriLens.NutriLens.domain.port.out.UserRepository;
+import org.springframework.stereotype.Service;
 
+@Service
 public class UpdateUserProfileUseCaseImpl implements UpdateUserProfileUseCase {
 
     private final UserRepository userRepository;
@@ -20,12 +22,13 @@ public class UpdateUserProfileUseCaseImpl implements UpdateUserProfileUseCase {
                 .orElseThrow(() -> new NotFound("Usuario no encontrado"));
 
         user.updateProfile(
-                command.getUsername(),
                 command.getDisplayName(),
                 command.getAvatarUrl(),
                 command.getWeight(),
                 command.getHeight(),
                 command.getAge(),
+                command.getPreference(),
+                command.getMeals(),
                 command.getGoal(),
                 command.getActivityLevel()
         );

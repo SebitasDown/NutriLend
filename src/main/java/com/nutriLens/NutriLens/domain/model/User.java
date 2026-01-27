@@ -1,10 +1,11 @@
 package com.nutriLens.NutriLens.domain.model;
 
+import java.time.LocalDateTime;
+
 public class User {
 
     // Usuario clave
     private Long id;
-    private String username;
     private String displayName;
     private String email;
     private String avatarUrl; // esto a claudinary
@@ -13,6 +14,11 @@ public class User {
     private Float weight;
     private Float height;
     private Integer age;
+    private Preference preference;
+    // Cuatas comidas
+    private Integer meals;
+
+    // ToDo: Que tan claro tienes que comer en tu dia a dia
 
     // Perfil Nutricional
     private Goal goal;
@@ -21,11 +27,26 @@ public class User {
     // Para desactivar la cuenta
     private boolean delete;
 
+    // Auditoria
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
 
     public User(String username, String displayName, boolean delete) {
-        this.username = username;
         this.displayName = displayName;
         this.delete = delete;
+    }
+
+    public void updateProfile(String displayName, String avatarUrl, Float weight, Float height, Integer age, Preference preference, Integer meals, Goal goal, ActivityLevel activityLevel) {
+        this.displayName = displayName;
+        this.avatarUrl = avatarUrl;
+        this.weight = weight;
+        this.height = height;
+        this.age = age;
+        this.preference = preference;
+        this.meals = meals;
+        this.goal = goal;
+        this.activityLevel = activityLevel;
     }
 
     public void setWeight(Float weight) {
@@ -42,14 +63,6 @@ public class User {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public String getDisplayName() {
@@ -122,5 +135,37 @@ public class User {
 
     public void setDelete(boolean delete) {
         this.delete = delete;
+    }
+
+    public Preference getPreference() {
+        return preference;
+    }
+
+    public void setPreference(Preference preference) {
+        this.preference = preference;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Integer getMeals() {
+        return meals;
+    }
+
+    public void setMeals(Integer meals) {
+        this.meals = meals;
     }
 }
