@@ -1,0 +1,37 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.classpath
+.project
+.settings/
+.factorypath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Documentation
+README.md
+RECIPES.md
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
