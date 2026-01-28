@@ -24,6 +24,10 @@ public class AuthProvider {
         this.providerUserId = providerUserId;
     }
 
+    public boolean isLocal() {
+        return authProviderType == authProviderType.LOCAL;
+    }
+
     public String getProviderEmail() {
         return providerEmail;
     }
@@ -54,5 +58,29 @@ public class AuthProvider {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getProviderAvatarUrl() {
+        return providerAvatarUrl;
+    }
+
+    public void setProviderUserId(String providerUserId) {
+        this.providerUserId = providerUserId;
+    }
+
+    public AuthProviderType getAuthProviderType() {
+        return authProviderType;
+    }
+
+    public void setAuthProviderType(AuthProviderType authProviderType) {
+        this.authProviderType = authProviderType;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

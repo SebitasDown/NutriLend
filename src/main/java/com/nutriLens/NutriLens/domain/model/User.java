@@ -32,6 +32,9 @@ public class User {
     private LocalDateTime updatedAt;
 
 
+    public User() {
+    }
+
     public User(String username, String displayName, boolean delete) {
         this.displayName = displayName;
         this.delete = delete;
