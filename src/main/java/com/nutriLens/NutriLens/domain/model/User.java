@@ -31,7 +31,6 @@ public class User {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-
     public User() {
     }
 
@@ -40,7 +39,8 @@ public class User {
         this.delete = delete;
     }
 
-    public void updateProfile(String displayName, String avatarUrl, Float weight, Float height, Integer age, Preference preference, Integer meals, Goal goal, ActivityLevel activityLevel) {
+    public void updateProfile(String displayName, String avatarUrl, Float weight, Float height, Integer age,
+            Preference preference, Integer meals, Goal goal, ActivityLevel activityLevel) {
         this.displayName = displayName;
         this.avatarUrl = avatarUrl;
         this.weight = weight;
@@ -50,14 +50,6 @@ public class User {
         this.meals = meals;
         this.goal = goal;
         this.activityLevel = activityLevel;
-    }
-
-    public void setWeight(Float weight) {
-        this.weight = weight;
-    }
-
-    public void setHeight(Float height) {
-        this.height = height;
     }
 
     public Long getId() {
@@ -92,19 +84,19 @@ public class User {
         this.avatarUrl = avatarUrl;
     }
 
-    public float getWeight() {
+    public Float getWeight() {
         return weight;
     }
 
-    public void setWeight(float weight) {
+    public void setWeight(Float weight) {
         this.weight = weight;
     }
 
-    public float getHeight() {
+    public Float getHeight() {
         return height;
     }
 
-    public void setHeight(float height) {
+    public void setHeight(Float height) {
         this.height = height;
     }
 

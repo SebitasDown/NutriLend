@@ -7,15 +7,16 @@ import com.nutriLens.NutriLens.domain.port.out.RecipeRepository;
 import com.nutriLens.NutriLens.infrastructure.port.out.persistence.mapper.MapperRecipe;
 import com.nutriLens.NutriLens.infrastructure.port.out.persistence.repository.MongoRecipeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 @RequiredArgsConstructor
 public class RecipeAdapter implements RecipeRepository {
 
     private final MongoRecipeRepository repository;
     private final MapperRecipe mapperRecipe;
-
 
     @Override
     public List<Recipe> findByGoalAndTypeFood(Goal goal, TypeFood typeFood) {

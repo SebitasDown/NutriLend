@@ -5,11 +5,11 @@ import java.util.List;
 public class Recipe {
 
     private String id;
-    private TypeFood typefood;
+    private TypeFood typeFood;
     private String name;
     private int time;
     private String description;
-    private int porcion;
+    private int portion;
     private int calories;
     private String image;
     private List<Ingredient> ingredients;
@@ -18,13 +18,14 @@ public class Recipe {
     // Vegetariano / no vegetariano
     private boolean vegetarian;
 
-    public Recipe(String id, TypeFood typefood, String name, int time, String description, int porcion, int calories, String image, List<Ingredient> ingredients, List<String> steps) {
+    public Recipe(String id, TypeFood typeFood, String name, int time, String description, int portion, int calories,
+            String image, List<Ingredient> ingredients, List<String> steps) {
         this.id = id;
-        this.typefood = typefood;
+        this.typeFood = typeFood;
         this.name = name;
         this.time = time;
         this.description = description;
-        this.porcion = porcion;
+        this.portion = portion;
         this.calories = calories;
         this.image = image;
         this.ingredients = ingredients;
@@ -39,12 +40,12 @@ public class Recipe {
         this.id = id;
     }
 
-    public TypeFood getTypefood() {
-        return typefood;
+    public TypeFood getTypeFood() {
+        return typeFood;
     }
 
-    public void setTypefood(TypeFood typefood) {
-        this.typefood = typefood;
+    public void setTypeFood(TypeFood typeFood) {
+        this.typeFood = typeFood;
     }
 
     public String getName() {
@@ -71,12 +72,12 @@ public class Recipe {
         this.description = description;
     }
 
-    public int getPorcion() {
-        return porcion;
+    public int getPortion() {
+        return portion;
     }
 
-    public void setPorcion(int porcion) {
-        this.porcion = porcion;
+    public void setPortion(int portion) {
+        this.portion = portion;
     }
 
     public int getCalories() {

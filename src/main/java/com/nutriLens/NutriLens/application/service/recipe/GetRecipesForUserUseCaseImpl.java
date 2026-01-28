@@ -1,7 +1,11 @@
 package com.nutriLens.NutriLens.application.service.recipe;
 
 import com.nutriLens.NutriLens.application.exception.NotFound;
-import com.nutriLens.NutriLens.domain.model.*;
+import com.nutriLens.NutriLens.domain.model.Recipe;
+import com.nutriLens.NutriLens.domain.model.TypeFood;
+import com.nutriLens.NutriLens.domain.model.User;
+import com.nutriLens.NutriLens.domain.model.Goal;
+import com.nutriLens.NutriLens.domain.model.Preference;
 import com.nutriLens.NutriLens.domain.port.in.recipe.GetRecipesForUserUseCase;
 import com.nutriLens.NutriLens.domain.port.out.RecipeRepository;
 import com.nutriLens.NutriLens.domain.port.out.UserRepository;
@@ -30,7 +34,7 @@ public class GetRecipesForUserUseCaseImpl implements GetRecipesForUserUseCase {
 
         List<Recipe> recipes = recipeRepository.findByGoalAndTypeFood(goal, typeFood);
 
-        if (preference == Preference.VEGETARIANO){
+        if (preference == Preference.VEGETARIANO) {
             return recipes.stream()
                     .filter(Recipe::isVegetarian)
                     .toList();

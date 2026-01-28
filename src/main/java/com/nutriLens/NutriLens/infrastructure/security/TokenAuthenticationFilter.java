@@ -26,8 +26,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
+            FilterChain filterChain) throws ServletException, IOException {
 
         String token = extractTokenFromRequest(request);
 
@@ -58,17 +57,15 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     private void syncWithSpringContext(
             UserSession session,
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
         if (SecurityContextHolder.getContext().getAuthentication() != null) {
             return;
         }
 
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                session.getUserId(),
+                session,
                 null,
-                Collections.emptyList()
-        );
+                Collections.emptyList());
 
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authToken);

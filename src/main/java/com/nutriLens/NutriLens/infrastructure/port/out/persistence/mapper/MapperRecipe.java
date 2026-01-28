@@ -8,6 +8,7 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface MapperRecipe {
-    Recipe toDomain (RecipeDocument document);
-    Ingredient toDomain (IngredientDocument document);
+    Recipe toDomain(RecipeDocument document);
+
+    Ingredient toDomain(IngredientDocument document);
 }

@@ -21,7 +21,8 @@ public class LoginWithGoogleUseCaseImpl implements LoginWithGoogleUseCase {
     private final UserRepository userRepository;
     private final TokenProvider tokenProvider;
 
-    public LoginWithGoogleUseCaseImpl(AuthProviderRepository authProviderRepository, UserRepository userRepository, TokenProvider tokenProvider) {
+    public LoginWithGoogleUseCaseImpl(AuthProviderRepository authProviderRepository, UserRepository userRepository,
+            TokenProvider tokenProvider) {
         this.authProviderRepository = authProviderRepository;
         this.userRepository = userRepository;
         this.tokenProvider = tokenProvider;
@@ -37,9 +38,9 @@ public class LoginWithGoogleUseCaseImpl implements LoginWithGoogleUseCase {
                     User user = new User();
                     user.setEmail(email);
                     user.setDisplayName(name);
-                    userRepository.save(user);
+                    User savedUser = userRepository.save(user);
 
-                    AuthProvider newProvider = new AuthProvider(user, AuthProviderType.GOOGLE, googleSub);
+                    AuthProvider newProvider = new AuthProvider(savedUser, AuthProviderType.GOOGLE, googleSub);
                     newProvider.setProviderEmail(email);
                     newProvider.setProviderAvatarUrl(avatarUrl);
                     return authProviderRepository.save(newProvider);

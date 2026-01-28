@@ -18,10 +18,9 @@ public class RecipeController {
     private final RecipeDtoMapper recipeDtoMapper;
 
     @GetMapping
-    public List<RecipeResponseDto> getRecipesForUser (
+    public List<RecipeResponseDto> getRecipesForUser(
             @RequestHeader("X-USER-ID") Long userId,
-            @RequestParam TypeFood typeFood
-            ){
+            @RequestParam TypeFood typeFood) {
         return getRecipesForUserUseCase.execute(userId, typeFood)
                 .stream()
                 .map(recipeDtoMapper::toDto)
