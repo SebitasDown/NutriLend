@@ -52,6 +52,10 @@ public class User {
         this.activityLevel = activityLevel;
     }
 
+    public void updateProfilePhoto(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
+
     public Long getId() {
         return id;
     }
