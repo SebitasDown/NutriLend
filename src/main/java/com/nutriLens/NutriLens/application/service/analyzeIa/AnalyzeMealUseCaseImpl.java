@@ -3,6 +3,7 @@ package com.nutriLens.NutriLens.application.service.analyzeIa;
 import com.nutriLens.NutriLens.domain.model.MealAnalysis;
 import com.nutriLens.NutriLens.domain.model.MediaInput;
 import com.nutriLens.NutriLens.domain.model.MediaType;
+import com.nutriLens.NutriLens.domain.model.MealType;
 import com.nutriLens.NutriLens.domain.model.NutritionProfile;
 import com.nutriLens.NutriLens.domain.port.in.analyzeIa.AnalyzeMealUseCase;
 import com.nutriLens.NutriLens.domain.port.out.MealAiPort;
@@ -20,31 +21,30 @@ public class AnalyzeMealUseCaseImpl implements AnalyzeMealUseCase {
     private final MealAiPort mealAiPort;
     private final MealAnalysisRepository mealAnalysisRepository;
 
-    public AnalyzeMealUseCaseImpl(MediaStoragePort mediaStoragePort, MealAiPort mealAiPort, MealAnalysisRepository mealAnalysisRepository) {
+    public AnalyzeMealUseCaseImpl(MediaStoragePort mediaStoragePort, MealAiPort mealAiPort,
+            MealAnalysisRepository mealAnalysisRepository) {
         this.mediaStoragePort = mediaStoragePort;
         this.mealAiPort = mealAiPort;
         this.mealAnalysisRepository = mealAnalysisRepository;
     }
 
-
     @Override
-    public MealAnalysis analyze(Long userId, byte[] fileBytes, MediaType type) {
+    public MealAnalysis analyze(Long userId, byte[] fileBytes, MediaType type, MealType mealType) {
         String cloudinaryUrl = mediaStoragePort.upload(fileBytes, type);
 
         NutritionProfile nutritionProfile = mealAiPort.analyze(fileBytes, type);
 
         MediaInput mediaInput = new MediaInput(
                 type,
-                cloudinaryUrl
-        );
+                cloudinaryUrl);
 
         MealAnalysis analysis = new MealAnalysis(
                 null,
                 userId,
                 mediaInput,
                 nutritionProfile,
-                Instant.now()
-        );
+                mealType,
+                Instant.now());
 
         return mealAnalysisRepository.save(analysis);
     }

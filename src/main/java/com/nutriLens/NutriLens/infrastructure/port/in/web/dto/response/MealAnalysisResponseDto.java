@@ -1,6 +1,7 @@
 package com.nutriLens.NutriLens.infrastructure.port.in.web.dto.response;
 
 import com.nutriLens.NutriLens.domain.model.MediaType;
+import com.nutriLens.NutriLens.domain.model.MealType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,6 +15,7 @@ public class MealAnalysisResponseDto {
     private String id;
     private String mediaUrl;
     private MediaType mediaType;
+    private MealType mealType;
     private NutritionProfileDto nutritionProfile;
     private Instant analyzedAt;
 }

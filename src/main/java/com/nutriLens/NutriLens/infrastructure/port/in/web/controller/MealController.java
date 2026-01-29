@@ -2,6 +2,7 @@ package com.nutriLens.NutriLens.infrastructure.port.in.web.controller;
 
 import com.nutriLens.NutriLens.domain.model.MealAnalysis;
 import com.nutriLens.NutriLens.domain.model.MediaType;
+import com.nutriLens.NutriLens.domain.model.MealType;
 import com.nutriLens.NutriLens.domain.port.in.analyzeIa.AnalyzeMealUseCase;
 import com.nutriLens.NutriLens.domain.port.in.analyzeIa.GetMealHistoryUseCase;
 import com.nutriLens.NutriLens.domain.port.in.auth.UserSession;
@@ -28,57 +29,43 @@ import java.util.Map;
 @Tag(name = "Meal Analysis", description = "Endpoints para análisis de comidas con IA")
 public class MealController {
 
-    private final AnalyzeMealUseCase analyzeMealUseCase;
-    private final GetMealHistoryUseCase getMealHistoryUseCase;
-    private final MealAnalysisDtoMapper mealAnalysisDtoMapper;
+        private final AnalyzeMealUseCase analyzeMealUseCase;
+        private final GetMealHistoryUseCase getMealHistoryUseCase;
+        private final MealAnalysisDtoMapper mealAnalysisDtoMapper;
 
-    @Operation(
-            summary = "Analizar comida",
-            description = "Sube una imagen o audio de una comida para obtener información nutricional mediante IA"
-    )
-    @PostMapping(value = "/analyze", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> analyzeMeal(
-            @Parameter(hidden = true) @AuthenticationPrincipal UserSession session,
-            @Parameter(
-                    description = "Archivo de imagen o audio de la comida",
-                    content = @Content(
-                            mediaType = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE,
-                            schema = @Schema(type = "string", format = "binary")
-                    )
-            )
-            @RequestPart("file") MultipartFile file,
-            @Parameter(description = "Tipo de media: IMAGE o AUDIO")
-            @RequestParam("type") MediaType type
-    ) throws IOException {
+        @Operation(summary = "Analizar comida", description = "Sube una imagen o audio de una comida para obtener información nutricional mediante IA")
+        @PostMapping(value = "/analyze", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+        public ResponseEntity<?> analyzeMeal(
+                        @Parameter(hidden = true) @AuthenticationPrincipal UserSession session,
+                        @Parameter(description = "Archivo de imagen o audio de la comida", content = @Content(mediaType = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE, schema = @Schema(type = "string", format = "binary"))) @RequestPart("file") MultipartFile file,
+                        @Parameter(description = "Tipo de media: IMAGE o AUDIO") @RequestParam("type") MediaType type,
+                        @Parameter(description = "Tipo de comida: BREAKFAST, LUNCH, DINNER, SNACK") @RequestParam("mealType") MealType mealType)
+                        throws IOException {
 
-        if (file.isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Por favor seleccione un archivo"));
+                if (file.isEmpty()) {
+                        return ResponseEntity.badRequest()
+                                        .body(Map.of("error", "Por favor seleccione un archivo"));
+                }
+
+                MealAnalysis analysis = analyzeMealUseCase.analyze(
+                                session.getUserId(),
+                                file.getBytes(),
+                                type,
+                                mealType);
+
+                MealAnalysisResponseDto responseDto = mealAnalysisDtoMapper.toDto(analysis);
+
+                return ResponseEntity.ok(responseDto);
         }
 
-        MealAnalysis analysis = analyzeMealUseCase.analyze(
-                session.getUserId(),
-                file.getBytes(),
-                type
-        );
-
-        MealAnalysisResponseDto responseDto = mealAnalysisDtoMapper.toDto(analysis);
-
-        return ResponseEntity.ok(responseDto);
-    }
-
-    @Operation(
-            summary = "Obtener historial de comidas",
-            description = "Retorna el historial de análisis de comidas del usuario autenticado"
-    )
-    @GetMapping("/history")
-    public ResponseEntity<List<MealAnalysisResponseDto>> getMealHistory(
-            @Parameter(hidden = true) @AuthenticationPrincipal UserSession session
-    ) {
-        List<MealAnalysis> history = getMealHistoryUseCase.execute(session.getUserId());
-        List<MealAnalysisResponseDto> historyDto = history.stream()
-                .map(mealAnalysisDtoMapper::toDto)
-                .toList();
-        return ResponseEntity.ok(historyDto);
-    }
+        @Operation(summary = "Obtener historial de comidas", description = "Retorna el historial de análisis de comidas del usuario autenticado")
+        @GetMapping("/history")
+        public ResponseEntity<List<MealAnalysisResponseDto>> getMealHistory(
+                        @Parameter(hidden = true) @AuthenticationPrincipal UserSession session) {
+                List<MealAnalysis> history = getMealHistoryUseCase.execute(session.getUserId());
+                List<MealAnalysisResponseDto> historyDto = history.stream()
+                                .map(mealAnalysisDtoMapper::toDto)
+                                .toList();
+                return ResponseEntity.ok(historyDto);
+        }
 }

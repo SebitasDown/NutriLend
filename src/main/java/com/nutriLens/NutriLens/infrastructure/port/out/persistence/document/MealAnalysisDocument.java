@@ -1,5 +1,6 @@
 package com.nutriLens.NutriLens.infrastructure.port.out.persistence.document;
 
+import com.nutriLens.NutriLens.domain.model.MealType;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,5 +21,6 @@ public class MealAnalysisDocument {
     private Long userId;
     private MediaInputDocument media;
     private NutritionProfileDocument nutritionProfile;
+    private MealType mealType;
     private Instant analyzedAt;
 }
