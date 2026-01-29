@@ -4,11 +4,21 @@ import java.time.Instant;
 
 public class ChatMessage {
 
+    private String id;
     private String conversationId;
     private Long userId;
     private ChatRole role;
     private String content;
     private Instant createAt;
+
+    public ChatMessage(String id, String conversationId, Long userId, ChatRole role, String content, Instant createAt) {
+        this.id = id;
+        this.conversationId = conversationId;
+        this.userId = userId;
+        this.role = role;
+        this.content = content;
+        this.createAt = createAt;
+    }
 
     public ChatMessage(String conversationId, Long userId, ChatRole role, String content, Instant createAt) {
         this.conversationId = conversationId;
@@ -32,6 +42,14 @@ public class ChatMessage {
     }
 
 
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getConversationId() {
         return conversationId;
