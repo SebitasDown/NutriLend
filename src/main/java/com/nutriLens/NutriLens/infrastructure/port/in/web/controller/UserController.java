@@ -5,17 +5,20 @@ import com.nutriLens.NutriLens.domain.port.in.auth.UserSession;
 import com.nutriLens.NutriLens.domain.port.in.user.GetUserProfileUseCase;
 import com.nutriLens.NutriLens.domain.port.in.user.UpdateProfilePhotoUseCase;
 import com.nutriLens.NutriLens.domain.port.in.user.UpdateUserProfileUseCase;
-import com.nutriLens.NutriLens.application.exception.NotFound;
 import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.request.UserUpdateRequest;
 import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.response.UserResponseDto;
 import com.nutriLens.NutriLens.infrastructure.port.in.web.mapper.UserDtoMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.Map;
 
@@ -55,16 +58,20 @@ public class UserController {
         return ResponseEntity.ok(userDtoMapper.toDto(updatedUser));
     }
 
-    @PostMapping("/profile/photo")
+    @Operation(summary = "Subir foto de perfil", description = "Permite subir una imagen para el perfil del usuario")
+    @PostMapping(value = "/profile/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, String>> updateProfilePhoto(
-            @AuthenticationPrincipal UserSession session,
-            @RequestParam("file") MultipartFile file
-            ) throws IOException {
+            @Parameter(hidden = true) @AuthenticationPrincipal UserSession session,
+            @Parameter(description = "Archivo de imagen", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE, schema = @Schema(type = "string", format = "binary"))) @RequestPart("file") MultipartFile file)
+            throws IOException {
+
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Por favor seleccione un archivo"));
+        }
 
         String avatarUrl = updateProfilePhotoUseCase.uploadProfileImage(
                 session.getUserId(),
-                file.getBytes()
-        );
+                file.getBytes());
         return ResponseEntity.ok(Map.of("avatarUrl", avatarUrl));
     }
 }
