@@ -2,9 +2,6 @@ package com.nutriLens.NutriLens.infrastructure.config;
 
 import com.nutriLens.NutriLens.domain.port.in.auth.AuthenticateTokenUseCase;
 import com.nutriLens.NutriLens.infrastructure.security.TokenAuthenticationFilter;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
-import io.swagger.v3.oas.models.security.SecurityScheme;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,17 +24,6 @@ import java.util.List;
 public class SecurityConfig {
 
         private final AuthenticateTokenUseCase authenticateTokenUseCase;
-
-        @Bean
-        public OpenAPI customOpenAPI() {
-                return new OpenAPI()
-                                .components(new io.swagger.v3.oas.models.Components()
-                                                .addSecuritySchemes("bearer-key",
-                                                                new SecurityScheme().type(SecurityScheme.Type.HTTP)
-                                                                                .scheme("bearer")
-                                                                                .bearerFormat("JWT")))
-                                .addSecurityItem(new SecurityRequirement().addList("bearer-key"));
-        }
 
         @Bean
         public BCryptPasswordEncoder passwordEncoder() {
