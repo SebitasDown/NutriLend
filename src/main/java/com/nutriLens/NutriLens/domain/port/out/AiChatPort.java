@@ -7,5 +7,5 @@ import java.util.List;
 // Puerto que se comunicara con el servicio para enviarle los datos a la IA
 public interface AiChatPort {
 
-    String send (String conversationId, List<ChatMessage> context);
+    String send(String conversationId, List<ChatMessage> context);
 }

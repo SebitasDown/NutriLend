@@ -19,51 +19,51 @@ import java.time.Instant;
 @Service
 public class AnalyzeMealUseCaseImpl implements AnalyzeMealUseCase {
 
-    private final MediaStoragePort mediaStoragePort;
-    private final MealAiPort mealAiPort;
-    private final MealAnalysisRepository mealAnalysisRepository;
-    private final MealRepository mealRepository;
+        private final MediaStoragePort mediaStoragePort;
+        private final MealAiPort mealAiPort;
+        private final MealAnalysisRepository mealAnalysisRepository;
+        private final MealRepository mealRepository;
 
-    public AnalyzeMealUseCaseImpl(MediaStoragePort mediaStoragePort, MealAiPort mealAiPort,
-            MealAnalysisRepository mealAnalysisRepository, MealRepository mealRepository) {
-        this.mediaStoragePort = mediaStoragePort;
-        this.mealAiPort = mealAiPort;
-        this.mealAnalysisRepository = mealAnalysisRepository;
-        this.mealRepository = mealRepository;
-    }
+        public AnalyzeMealUseCaseImpl(MediaStoragePort mediaStoragePort, MealAiPort mealAiPort,
+                        MealAnalysisRepository mealAnalysisRepository, MealRepository mealRepository) {
+                this.mediaStoragePort = mediaStoragePort;
+                this.mealAiPort = mealAiPort;
+                this.mealAnalysisRepository = mealAnalysisRepository;
+                this.mealRepository = mealRepository;
+        }
 
-    @Override
-    public MealAnalysis analyze(Long userId, byte[] fileBytes, MediaType type, MealType mealType) {
-        String cloudinaryUrl = mediaStoragePort.upload(fileBytes, type);
+        @Override
+        public MealAnalysis analyze(Long userId, byte[] fileBytes, MediaType type, MealType mealType) {
+                String cloudinaryUrl = mediaStoragePort.upload(fileBytes, type);
 
-        NutritionProfile nutritionProfile = mealAiPort.analyze(fileBytes, type);
+                NutritionProfile nutritionProfile = mealAiPort.analyze(fileBytes, type);
 
-        MediaInput mediaInput = new MediaInput(
-                type,
-                cloudinaryUrl);
+                MediaInput mediaInput = new MediaInput(
+                                type,
+                                cloudinaryUrl);
 
-        Instant now = Instant.now();
-        MealAnalysis analysis = new MealAnalysis(
-                null,
-                userId,
-                mediaInput,
-                nutritionProfile,
-                mealType,
-                now);
+                Instant now = Instant.now();
+                MealAnalysis analysis = new MealAnalysis(
+                                null,
+                                userId,
+                                mediaInput,
+                                nutritionProfile,
+                                mealType,
+                                now);
 
-        MealAnalysis savedAnalysis = mealAnalysisRepository.save(analysis);
+                MealAnalysis savedAnalysis = mealAnalysisRepository.save(analysis);
 
-        // También guardamos la comida en el diario nutricional
-        Meal meal = new Meal(
-                null,
-                userId,
-                nutritionProfile.getCalories(),
-                nutritionProfile.getProtein(),
-                nutritionProfile.getCarbs(),
-                nutritionProfile.getFats(),
-                now);
-        mealRepository.save(meal);
+                // También guardamos la comida en el diario nutricional
+                Meal meal = new Meal(
+                                null,
+                                userId,
+                                nutritionProfile.getCalories(),
+                                nutritionProfile.getProtein(),
+                                nutritionProfile.getCarbs(),
+                                nutritionProfile.getFats(),
+                                now);
+                mealRepository.save(meal);
 
-        return savedAnalysis;
-    }
+                return savedAnalysis;
+        }
 }

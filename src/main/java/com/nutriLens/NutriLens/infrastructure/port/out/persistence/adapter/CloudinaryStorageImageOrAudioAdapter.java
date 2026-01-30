@@ -31,12 +31,12 @@ public class CloudinaryStorageImageOrAudioAdapter implements MediaStoragePort {
                     file,
                     Map.of(
                             "folder", folder,
-                            "resource_type", resourceType
-                    )
-            );
+                            "resource_type", resourceType));
 
             return result.get("secure_url").toString();
         } catch (Exception e) {
+            System.err.println("ERROR UPLOADING TO CLOUDINARY: " + e.getMessage());
+            e.printStackTrace();
             throw new RuntimeException("Error subiendo " + type + " a Cloudinary: " + e.getMessage(), e);
         }
     }
