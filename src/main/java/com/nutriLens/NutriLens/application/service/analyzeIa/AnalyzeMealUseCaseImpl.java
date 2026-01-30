@@ -1,5 +1,6 @@
 package com.nutriLens.NutriLens.application.service.analyzeIa;
 
+import com.nutriLens.NutriLens.domain.model.Meal;
 import com.nutriLens.NutriLens.domain.model.MealAnalysis;
 import com.nutriLens.NutriLens.domain.model.MediaInput;
 import com.nutriLens.NutriLens.domain.model.MediaType;
@@ -8,6 +9,7 @@ import com.nutriLens.NutriLens.domain.model.NutritionProfile;
 import com.nutriLens.NutriLens.domain.port.in.analyzeIa.AnalyzeMealUseCase;
 import com.nutriLens.NutriLens.domain.port.out.MealAiPort;
 import com.nutriLens.NutriLens.domain.port.out.MealAnalysisRepository;
+import com.nutriLens.NutriLens.domain.port.out.MealRepository;
 import com.nutriLens.NutriLens.domain.port.out.MediaStoragePort;
 
 import org.springframework.stereotype.Service;
@@ -20,12 +22,14 @@ public class AnalyzeMealUseCaseImpl implements AnalyzeMealUseCase {
     private final MediaStoragePort mediaStoragePort;
     private final MealAiPort mealAiPort;
     private final MealAnalysisRepository mealAnalysisRepository;
+    private final MealRepository mealRepository;
 
     public AnalyzeMealUseCaseImpl(MediaStoragePort mediaStoragePort, MealAiPort mealAiPort,
-            MealAnalysisRepository mealAnalysisRepository) {
+            MealAnalysisRepository mealAnalysisRepository, MealRepository mealRepository) {
         this.mediaStoragePort = mediaStoragePort;
         this.mealAiPort = mealAiPort;
         this.mealAnalysisRepository = mealAnalysisRepository;
+        this.mealRepository = mealRepository;
     }
 
     @Override
@@ -38,14 +42,28 @@ public class AnalyzeMealUseCaseImpl implements AnalyzeMealUseCase {
                 type,
                 cloudinaryUrl);
 
+        Instant now = Instant.now();
         MealAnalysis analysis = new MealAnalysis(
                 null,
                 userId,
                 mediaInput,
                 nutritionProfile,
                 mealType,
-                Instant.now());
+                now);
 
-        return mealAnalysisRepository.save(analysis);
+        MealAnalysis savedAnalysis = mealAnalysisRepository.save(analysis);
+
+        // También guardamos la comida en el diario nutricional
+        Meal meal = new Meal(
+                null,
+                userId,
+                nutritionProfile.getCalories(),
+                nutritionProfile.getProtein(),
+                nutritionProfile.getCarbs(),
+                nutritionProfile.getFats(),
+                now);
+        mealRepository.save(meal);
+
+        return savedAnalysis;
     }
 }

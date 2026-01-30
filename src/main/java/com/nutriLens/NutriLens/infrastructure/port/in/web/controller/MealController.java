@@ -1,11 +1,14 @@
 package com.nutriLens.NutriLens.infrastructure.port.in.web.controller;
 
+import com.nutriLens.NutriLens.domain.model.DailyNutrition;
 import com.nutriLens.NutriLens.domain.model.MealAnalysis;
 import com.nutriLens.NutriLens.domain.model.MediaType;
 import com.nutriLens.NutriLens.domain.model.MealType;
+import com.nutriLens.NutriLens.domain.port.in.NutritionProfile.GetDailyNutritionUseCase;
 import com.nutriLens.NutriLens.domain.port.in.analyzeIa.AnalyzeMealUseCase;
 import com.nutriLens.NutriLens.domain.port.in.analyzeIa.GetMealHistoryUseCase;
 import com.nutriLens.NutriLens.domain.port.in.auth.UserSession;
+import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.response.DailyNutritionResponseDto;
 import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.response.MealAnalysisResponseDto;
 import com.nutriLens.NutriLens.infrastructure.port.in.web.mapper.MealAnalysisDtoMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,6 +23,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +36,7 @@ public class MealController {
 
         private final AnalyzeMealUseCase analyzeMealUseCase;
         private final GetMealHistoryUseCase getMealHistoryUseCase;
+        private final GetDailyNutritionUseCase getDailyNutritionUseCase;
         private final MealAnalysisDtoMapper mealAnalysisDtoMapper;
 
         @Operation(summary = "Analizar comida", description = "Sube una imagen o audio de una comida para obtener información nutricional mediante IA")
@@ -67,5 +73,28 @@ public class MealController {
                                 .map(mealAnalysisDtoMapper::toDto)
                                 .toList();
                 return ResponseEntity.ok(historyDto);
+        }
+
+        @Operation(summary = "Obtener resumen nutricional diario")
+        @GetMapping("/summary")
+        public ResponseEntity<DailyNutritionResponseDto> getDailySummary(
+                        @Parameter(hidden = true) @AuthenticationPrincipal UserSession session,
+                        @Parameter(description = "Fecha a consultar (yyyy-MM-dd), por defecto hoy") @RequestParam(value = "date", required = false) LocalDate date,
+                        @Parameter(description = "Offset de zona horaria (ej: -05:00)") @RequestParam(value = "timezoneOffset", defaultValue = "Z") String timezoneOffset) {
+
+                ZoneOffset offset = ZoneOffset.of(timezoneOffset);
+                LocalDate targetDate = (date != null) ? date : LocalDate.now(offset);
+                DailyNutrition dailyNutrition = getDailyNutritionUseCase.getDailyNutrition(session.getUserId(),
+                                targetDate, offset);
+
+                DailyNutritionResponseDto response = new DailyNutritionResponseDto(
+                                dailyNutrition.getTotalCalories(),
+                                dailyNutrition.getTotalProtein(),
+                                dailyNutrition.getTotalCarbs(),
+                                dailyNutrition.getTotalFats(),
+                                dailyNutrition.getCalorieGoal(),
+                                dailyNutrition.getCalorieProgressPercentage());
+
+                return ResponseEntity.ok(response);
         }
 }

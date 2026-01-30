@@ -8,6 +8,7 @@ import com.nutriLens.NutriLens.infrastructure.port.out.persistence.repository.Mo
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +35,14 @@ public class MealAnalysisAdapter implements MealAnalysisRepository {
     @Override
     public List<MealAnalysis> findByUserId(Long userId) {
         return repository.findByUserIdOrderByAnalyzedAtDesc(userId)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<MealAnalysis> findByUserAndDateRange(Long userId, Instant start, Instant end) {
+        return repository.findByUserIdAndAnalyzedAtBetween(userId, start, end)
                 .stream()
                 .map(mapper::toDomain)
                 .toList();
