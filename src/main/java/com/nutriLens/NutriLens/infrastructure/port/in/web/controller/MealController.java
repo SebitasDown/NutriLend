@@ -13,8 +13,11 @@ import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.response.MealAnaly
 import com.nutriLens.NutriLens.infrastructure.port.in.web.mapper.MealAnalysisDtoMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +42,18 @@ public class MealController {
         private final GetDailyNutritionUseCase getDailyNutritionUseCase;
         private final MealAnalysisDtoMapper mealAnalysisDtoMapper;
 
-        @Operation(summary = "Analizar comida", description = "Sube una imagen o audio de una comida para obtener información nutricional mediante IA")
+        @Operation(
+                summary = "Analizar comida",
+                description = "Sube una imagen o audio de una comida para obtener información nutricional mediante IA. " +
+                        "La IA detectará los alimentos y calculará calorías, proteínas, carbohidratos y grasas."
+        )
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = "Análisis completado exitosamente",
+                        content = @Content(schema = @Schema(implementation = MealAnalysisResponseDto.class))),
+                @ApiResponse(responseCode = "400", description = "Archivo vacío o formato no soportado"),
+                @ApiResponse(responseCode = "401", description = "No autorizado - Token JWT inválido o expirado"),
+                @ApiResponse(responseCode = "500", description = "Error al procesar el archivo con IA")
+        })
         @PostMapping(value = "/analyze", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
         public ResponseEntity<?> analyzeMeal(
                         @Parameter(hidden = true) @AuthenticationPrincipal UserSession session,
@@ -64,7 +78,15 @@ public class MealController {
                 return ResponseEntity.ok(responseDto);
         }
 
-        @Operation(summary = "Obtener historial de comidas", description = "Retorna el historial de análisis de comidas del usuario autenticado")
+        @Operation(
+                summary = "Obtener historial de comidas",
+                description = "Retorna el historial completo de análisis de comidas del usuario autenticado, ordenado por fecha"
+        )
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = "Historial obtenido exitosamente",
+                        content = @Content(array = @ArraySchema(schema = @Schema(implementation = MealAnalysisResponseDto.class)))),
+                @ApiResponse(responseCode = "401", description = "No autorizado - Token JWT inválido o expirado")
+        })
         @GetMapping("/history")
         public ResponseEntity<List<MealAnalysisResponseDto>> getMealHistory(
                         @Parameter(hidden = true) @AuthenticationPrincipal UserSession session) {
@@ -75,7 +97,15 @@ public class MealController {
                 return ResponseEntity.ok(historyDto);
         }
 
-        @Operation(summary = "Obtener resumen nutricional diario")
+        @Operation(
+                summary = "Obtener resumen nutricional diario",
+                description = "Retorna el resumen de consumo nutricional del día especificado, incluyendo progreso hacia la meta calórica"
+        )
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = "Resumen obtenido exitosamente",
+                        content = @Content(schema = @Schema(implementation = DailyNutritionResponseDto.class))),
+                @ApiResponse(responseCode = "401", description = "No autorizado - Token JWT inválido o expirado")
+        })
         @GetMapping("/summary")
         public ResponseEntity<DailyNutritionResponseDto> getDailySummary(
                         @Parameter(hidden = true) @AuthenticationPrincipal UserSession session,
