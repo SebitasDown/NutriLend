@@ -16,9 +16,9 @@ public class AiChatAdapter implements AiChatPort {
 
     @Override
     public String send(String conversationId, List<ChatMessage> context) {
-        log.warn("AiChatAdapter.send() - Implementación stub. Conversación: {}, Mensajes: {}", 
+        log.warn("AiChatAdapter.send() - Implementación stub. Conversación: {}, Mensajes: {}",
                 conversationId, context.size());
-        
+
         // Respuesta temporal de ejemplo
         return "Esta es una respuesta temporal. Por favor implementa la integración con el servicio de IA.";
     }

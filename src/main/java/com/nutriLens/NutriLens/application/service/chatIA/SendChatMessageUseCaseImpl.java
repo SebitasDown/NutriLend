@@ -20,7 +20,6 @@ public class SendChatMessageUseCaseImpl implements SendChatMessageUseCase {
         this.aiChatPort = aiChatPort;
     }
 
-
     @Override
     public String sendMessage(Long userId, String conversationId, String message) {
         ChatMessage userMessage = new ChatMessage(
@@ -28,8 +27,7 @@ public class SendChatMessageUseCaseImpl implements SendChatMessageUseCase {
                 userId,
                 ChatRole.USER,
                 message,
-                Instant.now()
-        );
+                Instant.now());
         chatRepository.save(userMessage);
 
         // Obtiene el contexto del chat
@@ -42,8 +40,7 @@ public class SendChatMessageUseCaseImpl implements SendChatMessageUseCase {
                 conversationId,
                 userId,
                 ChatRole.ASSISTANT,
-                aiReply
-        );
+                aiReply);
 
         chatRepository.save(assistantMessage);
 
