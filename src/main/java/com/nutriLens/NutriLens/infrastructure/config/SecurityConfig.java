@@ -34,7 +34,7 @@ public class SecurityConfig {
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration config = new CorsConfiguration();
                 config.setAllowedOriginPatterns(
-                                List.of("http://localhost:3000"));
+                                List.of("*"));
                 config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                 config.setAllowedHeaders(List.of("*"));
                 config.setAllowCredentials(true);
@@ -43,6 +43,7 @@ public class SecurityConfig {
                 source.registerCorsConfiguration("/**", config);
                 return source;
         }
+
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
