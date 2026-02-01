@@ -11,6 +11,7 @@ import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.response.AuthRespo
 import com.nutriLens.NutriLens.infrastructure.port.in.web.mapper.AuthDtoMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 @Tag(name = "Autenticación", description = "Endpoints para registro, login y autenticación de usuarios")
+@SecurityRequirements() // No requieren token - aquí se obtiene
 public class AuthController {
 
     private final LoginUserUseCase loginUserUseCase;
