@@ -82,7 +82,7 @@ public class MealAiAdapter implements MealAiPort {
             // Execute
             GeminiResponse response = restClient.post()
                     .uri(uriBuilder -> uriBuilder
-                            .path("/v1beta/models/gemini-2.0-flash:generateContent")
+                            .path("/v1beta/models/gemini-2.5-flash-lite:generateContent")
                             .queryParam("key", apiKey)
                             .build())
                     .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
