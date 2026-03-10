@@ -1,121 +1,94 @@
-# NutriLens API Documentation
+# 🥗 NutriLens API
 
-NutriLens es una aplicación de gestión nutricional impulsada por IA. Esta API permite gestionar usuarios, autenticación y generación de recetas personalizadas.
+NutriLens es una plataforma avanzada de gestión nutricional impulsada por Inteligencia Artificial. Permite a los usuarios realizar un seguimiento detallado de su ingesta de alimentos mediante análisis de imágenes y audio, recibir recomendaciones personalizadas y gestionar su perfil nutricional de manera eficiente.
 
+---
 
-## 🔐 Autenticación (`/auth`)
+## 🚀 Live Demo & API Documentation
+Puedes interactuar con la API en tiempo real y ver la documentación detallada de todos los endpoints aquí:
+
+👉 **[Live Swagger UI Documentation](https://nutrilens-0x37.onrender.com/swagger-ui/index.html)**
+
+---
+
+## ✨ Características Principales
+- **🤖 Análisis de Comidas con IA**: Sube fotos o audios de tus comidas para obtener un desglose nutricional automático (calorías, proteínas, carbohidratos, grasas).
+- **🥘 Generación de Recetas**: Obtén sugerencias de recetas personalizadas basadas en tus objetivos y preferencias.
+- **📈 Seguimiento Nutricional**: Historial completo de consumos y progreso diario hacia tus metas calóricas.
+- **💬 Asistente Nutricional**: Chat integrado con IA para resolver dudas sobre alimentación y salud.
+- **🔐 Seguridad y Autenticación**: Soporte para autenticación tradicional y Google OAuth2.
+
+---
+
+## 🛠️ Tecnologías Usadas
+- **Backend**: Java 21, Spring Boot 3.3.5
+- **Seguridad**: Spring Security, JWT (JSON Web Tokens)
+- **Base de Datos**: MySQL (Relacional), MongoDB (Conversaciones)
+- **IA**: Google Gemini AI (Análisis y Chat)
+- **Multimedia**: Cloudinary (Almacenamiento de imágenes)
+- **Documentación**: SpringDoc OpenAPI (Swagger)
+
+---
+
+## 🔐 Endpoints de Autenticación (`/auth`)
+Para la mayoría de los endpoints, se requiere un header `Authorization: Bearer <TOKEN>`.
 
 ### Registro de Usuario
 **POST** `/auth/register`
-
-Crea una nueva cuenta de usuario y su perfil nutricional.
-
-**Cuerpo de la petición (JSON):**
-```json
-{
-  "displayName": "Nombre de Usuario",
-  "email": "usuario@example.com",
-  "password": "password123",
-  "weight": 70.5,
-  "height": 175.0,
-  "age": 25,
-  "preference": "NORMAL", // O "VEGETARIANO"
-  "meals": 3,
-  "goal": "LOSE_WEIGHT", // O "MAINTAIN", "GAIN_MUSCLE"
-  "activityLevel": "LOW" // O "MEDIUM", "HIGH"
-}
-```
+*Crea una nueva cuenta y perfil nutricional.*
 
 ### Inicio de Sesión
 **POST** `/auth/login`
-
-**Cuerpo de la petición (JSON):**
-```json
-{
-  "email": "usuario@example.com",
-  "password": "password123"
-}
-```
-
-**Respuesta Exitosa:**
-```json
-{
-  "accessToken": "eyJhbG...",
-  "refreshToken": "eyJhbG..."
-}
-```
+*Retorna `accessToken` y `refreshToken`.*
 
 ### Login con Google
 **POST** `/auth/google`
 
-**Cuerpo de la petición (JSON):**
-```json
-{
-  "googleSub": "string",
-  "email": "string",
-  "name": "string",
-  "avatarUrl": "string"
-}
-```
-
 ---
 
 ## 👤 Usuario (`/api/users`)
-*Requiere Header: `Authorization: Bearer <TOKEN>`*
-
-### Obtener Perfil
-**GET** `/api/users/profile`
-
-### Actualizar Perfil
-**PUT** `/api/users/profile`
-
-**Cuerpo de la petición (JSON):**
-```json
-{
-  "displayName": "Nuevo Nombre",
-  "avatarUrl": "http://imagen.com/foto.jpg",
-  "weight": 72.0,
-  "height": 175.0,
-  "age": 26,
-  "preference": "VEGETARIANO",
-  "meals": 4,
-  "goal": "GAIN_MUSCLE",
-  "activityLevel": "MEDIUM"
-}
-```
+- **GET** `/api/users/profile`: Obtener perfil actual.
+- **PUT** `/api/users/profile`: Actualizar datos físicos y metas.
 
 ---
 
-## 🥗 Recetas (`/api/recipes`)
-*Requiere Header: `Authorization: Bearer <TOKEN>`*
+## 🥗 Comidas y Análisis (`/api/meals`)
+- **POST** `/api/meals/analyze`: Subir imagen/audio para análisis con IA.
+- **GET** `/api/meals/history`: Historial de comidas analizadas.
+- **GET** `/api/meals/summary`: Resumen nutricional del día.
 
-### Obtener Recetas Sugeridas
-**GET** `/api/recipes?typeFood=LUNCH`
+---
 
-El ID del usuario se extrae automáticamente del token.
+## 🍲 Recetas y Chat
+- **GET** `/api/recipes`: Sugerencias de recetas según el tipo (Desayuno, Almuerzo, etc.).
+- **GET** `/api/chat/history/{conversationId}`: Recuperar mensajes de una conversación.
+- **POST** `/api/chat/history`: Guardar mensajes nuevos en el historial.
 
-**Parámetros:**
-- `typeFood` (Obligatorio): `BREAKFAST`, `LUNCH`, `DINNER`, `SNACK`.
+---
 
-**Respuesta:**
-```json
-[
-  {
-    "id": "65...",
-    "name": "Ensalada de Quinoa",
-    "typeFood": "LUNCH",
-    "time": 20,
-    "description": "Una ensalada fresca y nutritiva...",
-    "portion": 1,
-    "calories": 350,
-    "image": "url_de_la_imagen",
-    "ingredients": [
-      { "name": "Quinoa", "quantity": "100g" }
-    ],
-    "steps": [
-      "Lavar la quinoa",
-      "Cocer por 15 min"
-    ]
-  }
-]
+## ⚙️ Desarrollo Local
+1. Clona el repositorio.
+2. Configura las variables de entorno en un archivo `.env` en la raíz del proyecto:
+
+```env
+# Database Configuration
+SERVER_PORT=8080
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_DB=nutrilens
+MYSQL_USER=root
+MYSQL_PASSWORD=password
+MONGODB_URI=mongodb://localhost:27017/nutrilens
+
+# Security
+JWT_SECRET=your_super_secret_jwt_key_here
+JWT_EXPIRATION=86400000
+
+# external APIs
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
+
+3. Ejecuta con `./mvnw spring-boot:run`.
