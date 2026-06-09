@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import java.util.Random;
 
+@Slf4j
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -110,7 +112,11 @@ public class AuthController {
         VerificationToken token = new VerificationToken(
                 request.getEmail(), code, VerificationToken.TokenType.EMAIL_VERIFICATION);
         verificationTokenRepository.save(token);
-        emailService.sendVerificationCode(request.getEmail(), code);
+        try {
+            emailService.sendVerificationCode(request.getEmail(), code);
+        } catch (Exception e) {
+            log.warn("EMAIL NO ENVIADO (SMTP no disponible). Codigo para {}: [{}]", request.getEmail(), code);
+        }
         return ResponseEntity.ok(Map.of("message", "Codigo de verificacion enviado a " + request.getEmail()));
     }
 
@@ -145,7 +151,11 @@ public class AuthController {
         VerificationToken token = new VerificationToken(
                 request.getEmail(), code, VerificationToken.TokenType.PASSWORD_RESET);
         verificationTokenRepository.save(token);
-        emailService.sendPasswordResetCode(request.getEmail(), code);
+        try {
+            emailService.sendPasswordResetCode(request.getEmail(), code);
+        } catch (Exception e) {
+            log.warn("EMAIL NO ENVIADO (SMTP no disponible). Codigo para {}: [{}]", request.getEmail(), code);
+        }
         return ResponseEntity.ok(Map.of("message", "Codigo de recuperacion enviado a " + request.getEmail()));
     }
 
