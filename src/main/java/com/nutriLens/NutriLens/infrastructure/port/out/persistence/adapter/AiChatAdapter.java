@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,14 +41,16 @@ public class AiChatAdapter implements AiChatPort {
     @Override
     public String send(String conversationId, List<ChatMessage> context) {
         try {
+            // Intento principal con Groq (más rápido para modelos grandes)
             return sendWithGroq(context);
         } catch (Exception e) {
-            log.warn("Groq fallo, intentando con Gemini: {}", e.getMessage());
+            log.warn("Groq falló, intentando con Gemini: {}", e.getMessage());
             try {
+                // Fallback automático a Gemini si Groq falla o se cae
                 return sendWithGemini(context);
             } catch (Exception ex) {
                 log.error("Ambos proveedores de IA fallaron para el chat", ex);
-                return "Lo siento, en este momento no puedo procesar tu solicitud. Intenta de nuevo mas tarde.";
+                return "Lo siento, en este momento no puedo procesar tu solicitud. Intenta de nuevo más tarde.";
             }
         }
     }
@@ -58,6 +61,7 @@ public class AiChatAdapter implements AiChatPort {
             throw new IllegalStateException("Groq no configurado");
         }
 
+        // Groq acepta el rol 'system' directamente en la lista de mensajes
         List<GroqRequest.Message> messages = context.stream()
                 .filter(msg -> msg.getRole() != null)
                 .map(msg -> new GroqRequest.Message(
@@ -65,7 +69,8 @@ public class AiChatAdapter implements AiChatPort {
                         msg.getContent()))
                 .collect(Collectors.toList());
 
-        GroqRequest request = GroqRequest.chat("llama3-70b-8192", messages);
+        // Se usa el modelo actualizado para evitar el error 400 de modelo obsoleto
+        GroqRequest request = GroqRequest.chat("llama-3.3-70b-versatile", messages);
 
         GroqResponse response = groqRestClient.post()
                 .uri("/chat/completions")
@@ -76,11 +81,11 @@ public class AiChatAdapter implements AiChatPort {
 
         if (response != null && !response.choices().isEmpty()) {
             String reply = response.choices().get(0).message().content();
-            log.info("Groq respondio exitosamente");
+            log.info("Groq respondió exitosamente");
             return reply;
         }
 
-        throw new RuntimeException("Groq no devolvio respuesta");
+        throw new RuntimeException("Groq no devolvió respuesta");
     }
 
     private String sendWithGemini(List<ChatMessage> context) {
@@ -89,14 +94,31 @@ public class AiChatAdapter implements AiChatPort {
             throw new IllegalStateException("Gemini no configurado");
         }
 
-        String fullPrompt = context.stream()
-                .filter(msg -> msg.getRole() != null)
-                .map(msg -> msg.getRole().name() + ": " + msg.getContent())
-                .collect(Collectors.joining("\n"));
+        GeminiRequest.Content systemInstruction = null;
+        List<GeminiRequest.Content> contents = new ArrayList<>();
 
-        GeminiRequest.Part part = GeminiRequest.Part.text(fullPrompt);
-        GeminiRequest.Content content = new GeminiRequest.Content(List.of(part));
-        GeminiRequest request = new GeminiRequest(List.of(content), null);
+        // Gemini requiere separar las instrucciones del sistema del resto del historial
+        for (ChatMessage msg : context) {
+            if (msg.getRole() == null) continue;
+
+            GeminiRequest.Part part = GeminiRequest.Part.text(msg.getContent());
+
+            switch (msg.getRole()) {
+                case SYSTEM:
+                    // Se extrae el system prompt para mandarlo en su campo específico
+                    systemInstruction = new GeminiRequest.Content(null, List.of(part));
+                    break;
+                case USER:
+                    contents.add(GeminiRequest.Content.user(List.of(part)));
+                    break;
+                case ASSISTANT:
+                    // Mapeo correcto: en Gemini la IA tiene el rol de 'model'
+                    contents.add(GeminiRequest.Content.model(List.of(part)));
+                    break;
+            }
+        }
+
+        GeminiRequest request = new GeminiRequest(contents, systemInstruction, null);
 
         GeminiResponse response = geminiRestClient.post()
                 .uri(uriBuilder -> uriBuilder
@@ -110,10 +132,10 @@ public class AiChatAdapter implements AiChatPort {
 
         if (response != null && !response.candidates().isEmpty()) {
             String reply = response.candidates().get(0).content().parts().get(0).text();
-            log.info("Gemini respondio exitosamente");
+            log.info("Gemini respondió exitosamente");
             return reply;
         }
 
-        throw new RuntimeException("Gemini no devolvio respuesta");
+        throw new RuntimeException("Gemini no devolvió respuesta");
     }
 }

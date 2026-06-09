@@ -69,16 +69,28 @@ public class SendChatMessageUseCaseImpl implements SendChatMessageUseCase {
 
     private String buildProfilePrompt(User user) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Eres NutriBot, un asistente nutricional experto. Respondes en espanol de forma clara y concisa. ");
-        sb.append("Tu usuario tiene el siguiente perfil:\n");
+
+        // 1. Definición del rol y contexto
+        sb.append("Eres NutriBot, el asistente nutricional integrado de la app NutriLens. ");
+
+        // 2. REGLAS ESTRICTAS (Esto soluciona los "holas" y las respuestas repetitivas)
+        sb.append("REGLAS ESTRICTAS QUE DEBES CUMPLIR:\n");
+        sb.append("- NO saludes. Cero saludos (prohibido decir 'Hola', 'Buenos días', '¿En qué te ayudo?'). Ve directo a la respuesta.\n");
+        sb.append("- Estás en medio de un chat continuo. Responde de forma natural y coherente al último mensaje.\n");
+        sb.append("- Sé claro, conciso y no repitas información obvia.\n\n");
+
+
+        sb.append("PERFIL DEL USUARIO ACTUAL:\n");
         if (user.getDisplayName() != null) sb.append("- Nombre: ").append(user.getDisplayName()).append("\n");
-        if (user.getAge() != null) sb.append("- Edad: ").append(user.getAge()).append(" anios\n");
+        if (user.getAge() != null) sb.append("- Edad: ").append(user.getAge()).append(" años\n");
         if (user.getWeight() != null) sb.append("- Peso: ").append(user.getWeight()).append(" kg\n");
         if (user.getHeight() != null) sb.append("- Altura: ").append(user.getHeight()).append(" cm\n");
         if (user.getGoal() != null) sb.append("- Objetivo: ").append(formatGoal(user.getGoal().name())).append("\n");
         if (user.getActivityLevel() != null) sb.append("- Nivel de actividad: ").append(formatActivity(user.getActivityLevel().name())).append("\n");
-        if (user.getPreference() != null) sb.append("- Preferencia alimenticia: ").append(user.getPreference().name()).append("\n");
-        sb.append("Usa esta informacion para personalizar tus respuestas y recomendaciones.");
+        if (user.getPreference() != null) sb.append("- Preferencia alimenticia: ").append(user.getPreference().name()).append("\n\n");
+
+        sb.append("Usa estos datos implícitamente para personalizar la respuesta, pero no los menciones a menos que sea necesario para la explicación.");
+
         return sb.toString();
     }
 

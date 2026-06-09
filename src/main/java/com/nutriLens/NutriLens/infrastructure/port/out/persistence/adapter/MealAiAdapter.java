@@ -74,6 +74,7 @@ public class MealAiAdapter implements MealAiPort {
         GeminiRequest.Content content = new GeminiRequest.Content(List.of(promptPart, mediaPart));
         GeminiRequest request = new GeminiRequest(
                 List.of(content),
+                null,
                 new GeminiRequest.GenerationConfig("application/json"));
 
         GeminiResponse response = geminiRestClient.post()
@@ -105,7 +106,7 @@ public class MealAiAdapter implements MealAiPort {
         String base64Data = Base64.getEncoder().encodeToString(fileByte);
         String prompt = buildPrompt(type);
 
-        GroqRequest request = GroqRequest.analysis("llama3-70b-8192",
+        GroqRequest request = GroqRequest.analysis("llama-3.3-70b-versatile",
                 prompt + "\n\nDatos del archivo (base64): " + base64Data);
 
         GroqResponse response = groqRestClient.post()

@@ -5,20 +5,28 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record GeminiRequest(List<Content> contents,
+public record GeminiRequest(
+        List<Content> contents,
+        @JsonProperty("systemInstruction") Content systemInstruction,
         @JsonProperty("generationConfig") GenerationConfig generationConfig) {
 
-    public record Content(List<Part> parts) {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record Content(String role, List<Part> parts) {
+        public static Content user(List<Part> parts) {
+            return new Content("user", parts);
+        }
+
+        public static Content model(List<Part> parts) {
+            return new Content("model", parts);
+        }
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record Part(String text, @JsonProperty("inline_data") InlineData inlineData) {
-        // Constructor de conveniencia para texto
         public static Part text(String text) {
             return new Part(text, null);
         }
 
-        // Constructor de conveniencia para imagen
         public static Part image(String mimeType, String base64Data) {
             return new Part(null, new InlineData(mimeType, base64Data));
         }
