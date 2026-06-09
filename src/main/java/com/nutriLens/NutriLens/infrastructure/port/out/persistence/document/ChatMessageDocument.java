@@ -23,4 +23,28 @@ public class ChatMessageDocument {
     private ChatRole role;
     private String content;
     private Instant createAt;
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setConversationId(String conversationId) {
+        this.conversationId = conversationId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public void setRole(ChatRole role) {
+        this.role = role;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setCreateAt(Instant createAt) {
+        this.createAt = createAt;
+    }
 }

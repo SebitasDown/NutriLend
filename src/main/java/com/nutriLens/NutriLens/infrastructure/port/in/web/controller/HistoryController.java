@@ -2,9 +2,7 @@ package com.nutriLens.NutriLens.infrastructure.port.in.web.controller;
 
 import com.nutriLens.NutriLens.domain.model.ChatMessage;
 import com.nutriLens.NutriLens.domain.port.in.auth.UserSession;
-import com.nutriLens.NutriLens.domain.port.in.chatIA.GetConversationHistoryUseCase;
-import com.nutriLens.NutriLens.domain.port.in.chatIA.SaveChatMessageUseCase;
-import com.nutriLens.NutriLens.domain.port.in.chatIA.SendChatMessageUseCase;
+import com.nutriLens.NutriLens.domain.port.in.chatIA.*;
 import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.request.SaveHistoryRequest;
 import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.request.SendChatRequest;
 import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.response.ChatMessageResponseDto;
@@ -20,21 +18,25 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.PrivateKey;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "Chat e Historial", description = "Endpoints para gestionar conversaciones y historial de chat con IA")
 public class HistoryController {
 
     private final SaveChatMessageUseCase saveChatMessageUseCase;
     private final GetConversationHistoryUseCase getConversationHistoryUseCase;
     private final SendChatMessageUseCase sendChatMessageUseCase;
+    private final CreateChatSessionUseCase createChatSessionUseCase;
     private final ChatDtoMapper chatDtoMapper;
 
     @Operation(
@@ -103,5 +105,22 @@ public class HistoryController {
                 request.getMessage());
 
         return ResponseEntity.ok(new SendChatResponse(request.getConversationId(), reply));
+    }
+
+
+    @Operation(
+            summary = "Crear sesión de chat",
+            description = "Inicia una nueva sesión de conversación obteniendo un ID único en el backend"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Sesión iniciada exitosamente"),
+            @ApiResponse(responseCode = "401", description = "No autorizado - Token JWT inválido o expirado")
+    })
+    @PostMapping("/sessions")
+    public ResponseEntity<SessionResponse> createSession(@Parameter(hidden = true) @AuthenticationPrincipal UserSession session){
+        log.info("Creando nueva sesión de chat para el usuario ID: {}", session.getUserId());
+        SessionResponse response = createChatSessionUseCase.execute(session.getUserId());
+
+        return ResponseEntity.ok(response);
     }
 }

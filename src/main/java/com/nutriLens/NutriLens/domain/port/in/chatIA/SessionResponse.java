@@ -1,4 +1,4 @@
 package com.nutriLens.NutriLens.domain.port.in.chatIA;
 
-public record SessionResponse() {
+public record SessionResponse(String conversationId) {
 }

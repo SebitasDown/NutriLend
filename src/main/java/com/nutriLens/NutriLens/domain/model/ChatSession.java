@@ -2,14 +2,14 @@ package com.nutriLens.NutriLens.domain.model;
 
 import java.time.Instant;
 
-public class ChatSessionModel {
+public class ChatSession {
 
     private String id;
     private Long userId;
     private Instant createdAt;
 
 
-    public ChatSessionModel(String id, Long userId, Instant createdAt) {
+    public ChatSession(String id, Long userId, Instant createdAt) {
         this.id = id;
         this.userId = userId;
         this.createdAt = createdAt;

@@ -29,7 +29,6 @@ public class SendChatMessageUseCaseImpl implements SendChatMessageUseCase {
     }
 
     @Override
-    @Transactional
     public String sendMessage(Long userId, String conversationId, String message) {
 
         // 1. Obtener el historial previo ANTES de guardar nada nuevo
