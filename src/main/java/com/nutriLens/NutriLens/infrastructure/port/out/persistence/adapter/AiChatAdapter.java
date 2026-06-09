@@ -59,6 +59,7 @@ public class AiChatAdapter implements AiChatPort {
         }
 
         List<GroqRequest.Message> messages = context.stream()
+                .filter(msg -> msg.getRole() != null)
                 .map(msg -> new GroqRequest.Message(
                         msg.getRole().name().toLowerCase(),
                         msg.getContent()))
@@ -93,6 +94,7 @@ public class AiChatAdapter implements AiChatPort {
         }
 
         String historyText = context.stream()
+                .filter(msg -> msg.getRole() != null)
                 .map(msg -> msg.getRole().name() + ": " + msg.getContent())
                 .collect(Collectors.joining("\n"));
 

@@ -48,8 +48,8 @@ public class EmailService {
             mailSender.send(message);
             log.info("Email enviado exitosamente a: {}", to);
         } catch (Exception e) {
-            log.error("Error enviando email a: {}", to, e);
-            throw new RuntimeException("Error al enviar email: " + e.getMessage(), e);
+            log.warn("No se pudo enviar email a {} (SMTP no disponible): {}", to, e.getMessage());
+            log.warn("Contenido del email:\nPara: {}\nAsunto: {}\n\n{}", to, subject, text);
         }
     }
 }
