@@ -4,8 +4,11 @@ import com.nutriLens.NutriLens.domain.model.ChatMessage;
 import com.nutriLens.NutriLens.domain.port.in.auth.UserSession;
 import com.nutriLens.NutriLens.domain.port.in.chatIA.GetConversationHistoryUseCase;
 import com.nutriLens.NutriLens.domain.port.in.chatIA.SaveChatMessageUseCase;
+import com.nutriLens.NutriLens.domain.port.in.chatIA.SendChatMessageUseCase;
 import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.request.SaveHistoryRequest;
+import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.request.SendChatRequest;
 import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.response.ChatMessageResponseDto;
+import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.response.SendChatResponse;
 import com.nutriLens.NutriLens.infrastructure.port.in.web.mapper.ChatDtoMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,6 +34,7 @@ public class HistoryController {
 
     private final SaveChatMessageUseCase saveChatMessageUseCase;
     private final GetConversationHistoryUseCase getConversationHistoryUseCase;
+    private final SendChatMessageUseCase sendChatMessageUseCase;
     private final ChatDtoMapper chatDtoMapper;
 
     @Operation(
@@ -77,5 +81,27 @@ public class HistoryController {
                 conversationId);
 
         return ResponseEntity.ok(chatDtoMapper.toDtoList(history));
+    }
+
+    @Operation(
+            summary = "Enviar mensaje al asistente IA",
+            description = "Envía un mensaje del usuario al asistente IA y obtiene una respuesta"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Respuesta obtenida exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autorizado - Token JWT inválido o expirado")
+    })
+    @PostMapping("/send")
+    public ResponseEntity<SendChatResponse> sendMessage(
+            @Parameter(hidden = true) @AuthenticationPrincipal UserSession session,
+            @Valid @RequestBody SendChatRequest request) {
+
+        String reply = sendChatMessageUseCase.sendMessage(
+                session.getUserId(),
+                request.getConversationId(),
+                request.getMessage());
+
+        return ResponseEntity.ok(new SendChatResponse(request.getConversationId(), reply));
     }
 }

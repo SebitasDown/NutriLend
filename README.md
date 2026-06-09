@@ -89,6 +89,13 @@ CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 GEMINI_API_KEY=your_gemini_api_key_here
+GROQ_API_KEY=gsk_your_groq_api_key_here
+
+# Mail Configuration (para verificacion de email y recuperacion de contrasena)
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your_email@gmail.com
+MAIL_PASSWORD=your_app_password
 ```
 
 3. Ejecuta con `./mvnw spring-boot:run`.
