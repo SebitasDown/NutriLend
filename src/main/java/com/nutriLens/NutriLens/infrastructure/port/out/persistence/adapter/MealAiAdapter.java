@@ -71,7 +71,7 @@ public class MealAiAdapter implements MealAiPort {
 
         GeminiRequest.Part promptPart = GeminiRequest.Part.text(prompt);
         GeminiRequest.Part mediaPart = GeminiRequest.Part.image(mimeType, base64Data);
-        GeminiRequest.Content content = new GeminiRequest.Content(List.of(promptPart, mediaPart));
+        GeminiRequest.Content content = new GeminiRequest.Content("user", List.of(promptPart, mediaPart));
         GeminiRequest request = new GeminiRequest(
                 List.of(content),
                 null,
