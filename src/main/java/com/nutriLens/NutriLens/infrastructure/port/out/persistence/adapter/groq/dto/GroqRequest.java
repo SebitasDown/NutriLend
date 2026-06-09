@@ -1,6 +1,7 @@
 package com.nutriLens.NutriLens.infrastructure.port.out.persistence.adapter.groq.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -8,7 +9,7 @@ public record GroqRequest(
         String model,
         List<Message> messages,
         Double temperature,
-        Integer maxTokens
+        @JsonProperty("max_tokens") Integer maxTokens
 ) {
     public record Message(String role, String content) {
         public static Message system(String content) {

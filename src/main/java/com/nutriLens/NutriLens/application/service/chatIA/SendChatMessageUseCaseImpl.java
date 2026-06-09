@@ -40,13 +40,18 @@ public class SendChatMessageUseCaseImpl implements SendChatMessageUseCase {
         List<ChatMessage> history = new ArrayList<>(chatRepository.findRecent(conversationId, 20));
         java.util.Collections.reverse(history);
 
-        Optional<User> optUser = userRepository.findById(userId);
-        if (optUser.isPresent()) {
-            User user = optUser.get();
-            String profileInfo = buildProfilePrompt(user);
-            ChatMessage systemMsg = new ChatMessage(
-                    conversationId, userId, ChatRole.SYSTEM, profileInfo, Instant.now());
-            history.add(0, systemMsg);
+        boolean hasSystemMessage = history.stream().anyMatch(msg -> msg.getRole() == ChatRole.SYSTEM);
+
+        if (!hasSystemMessage) {
+            Optional<User> optUser = userRepository.findById(userId);
+            if (optUser.isPresent()) {
+                User user = optUser.get();
+                String profileInfo = buildProfilePrompt(user);
+                ChatMessage systemMsg = new ChatMessage(
+                        conversationId, userId, ChatRole.SYSTEM, profileInfo, Instant.now());
+                chatRepository.save(systemMsg);
+                history.add(0, systemMsg);
+            }
         }
 
         String aiReply = aiChatPort.send(conversationId, history);
