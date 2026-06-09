@@ -65,10 +65,6 @@ public class AiChatAdapter implements AiChatPort {
                         msg.getContent()))
                 .collect(Collectors.toList());
 
-        messages.add(0, GroqRequest.Message.system(
-                "Eres NutriBot, un asistente nutricional experto. Respondes en espanol de forma clara y concisa. " +
-                "Ayudas con preguntas sobre nutricion, dietas, calorias, recetas saludables y consejos alimenticios."));
-
         GroqRequest request = GroqRequest.chat("llama3-70b-8192", messages);
 
         GroqResponse response = groqRestClient.post()
@@ -93,13 +89,10 @@ public class AiChatAdapter implements AiChatPort {
             throw new IllegalStateException("Gemini no configurado");
         }
 
-        String historyText = context.stream()
+        String fullPrompt = context.stream()
                 .filter(msg -> msg.getRole() != null)
                 .map(msg -> msg.getRole().name() + ": " + msg.getContent())
                 .collect(Collectors.joining("\n"));
-
-        String systemPrompt = "Eres NutriBot, un asistente nutricional experto. Respondes en espanol.";
-        String fullPrompt = systemPrompt + "\n\nHistorial:\n" + historyText;
 
         GeminiRequest.Part part = GeminiRequest.Part.text(fullPrompt);
         GeminiRequest.Content content = new GeminiRequest.Content(List.of(part));

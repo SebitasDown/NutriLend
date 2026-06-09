@@ -38,6 +38,7 @@ public class SendChatMessageUseCaseImpl implements SendChatMessageUseCase {
         chatRepository.save(userMessage);
 
         List<ChatMessage> history = new ArrayList<>(chatRepository.findRecent(conversationId, 20));
+        java.util.Collections.reverse(history);
 
         Optional<User> optUser = userRepository.findById(userId);
         if (optUser.isPresent()) {
