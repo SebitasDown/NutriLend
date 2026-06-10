@@ -44,19 +44,20 @@ public class MealAiAdapter implements MealAiPort {
 
     @Override
     public NutritionProfile analyze(byte[] fileByte, MediaType type) {
-        if (type == MediaType.AUDIO) {
-            log.info("Iniciando analisis de audio ({} bytes)...", fileByte.length);
-            return analyzeWithGemini(fileByte, type);
-        }
+        log.info("=== MealAiAdapter.analyze() recibido: type={}, bytes={} ===", type, fileByte.length);
         try {
-            return analyzeWithGemini(fileByte, type);
+            NutritionProfile result = analyzeWithGemini(fileByte, type);
+            log.info("Analyze con Gemini exitoso para {}: {} kcal", type, result.getCalories());
+            return result;
         } catch (Exception e) {
-            log.warn("Gemini fallo, intentando con Groq: {}", e.getMessage());
+            log.warn("Gemini fallo para {}, intentando con Groq: {}", type, e.getMessage());
             try {
-                return analyzeWithGroq(fileByte, type);
+                NutritionProfile result = analyzeWithGroq(fileByte, type);
+                log.info("Analyze con Groq exitoso para {}: {} kcal", type, result.getCalories());
+                return result;
             } catch (Exception ex) {
-                log.error("Ambos proveedores de IA fallaron", ex);
-                throw new RuntimeException("Error en analisis de IA: " + ex.getMessage(), ex);
+                log.error("Ambos proveedores de IA fallaron para {}", type, ex);
+                throw new RuntimeException("Error en analisis de IA para " + type + ": " + ex.getMessage(), ex);
             }
         }
     }
@@ -84,23 +85,30 @@ public class MealAiAdapter implements MealAiPort {
             throw new IllegalStateException("Gemini no configurado");
         }
 
-        log.info("Iniciando analisis con Gemini para {}...", type);
+        log.info("Iniciando analisis con Gemini para {} ({} bytes)...", type, fileByte.length);
         String base64Data = Base64.getEncoder().encodeToString(fileByte);
         String prompt = buildPrompt(type);
-        String mimeType = (type == MediaType.IMAGE) ? "image/jpeg" : "audio/mp4";
+        String mimeType;
+        if (type == MediaType.IMAGE) {
+            mimeType = "image/jpeg";
+        } else if (fileByte.length > 4 && fileByte[0] == 0x52 && fileByte[1] == 0x49 && fileByte[2] == 0x46 && fileByte[3] == 0x46) {
+            mimeType = "audio/wav";
+        } else {
+            mimeType = "audio/mp4";
+        }
+
+        log.info("Enviando a Gemini: type={}, mimeType={}, promptLength={}, base64Length={}", type, mimeType, prompt.length(), base64Data.length());
 
         GeminiRequest.Part promptPart = GeminiRequest.Part.text(prompt);
         GeminiRequest.Part mediaPart = GeminiRequest.Part.image(mimeType, base64Data);
         GeminiRequest.Content content = new GeminiRequest.Content("user", List.of(promptPart, mediaPart));
-        GeminiRequest.GenerationConfig genConfig = (type == MediaType.IMAGE)
-                ? new GeminiRequest.GenerationConfig("application/json")
-                : null;
+        GeminiRequest.GenerationConfig genConfig = new GeminiRequest.GenerationConfig("application/json");
         GeminiRequest request = new GeminiRequest(
                 List.of(content),
                 null,
                 genConfig);
 
-        log.debug("Enviando solicitud a Gemini (prompt length: {}, base64 length: {})", prompt.length(), base64Data.length());
+        log.info("Enviando solicitud a Gemini para {}...", type);
         GeminiResponse response = geminiRestClient.post()
                 .uri(uriBuilder -> uriBuilder
                         .path("/v1beta/models/gemini-2.5-flash-lite:generateContent")
@@ -250,10 +258,11 @@ public class MealAiAdapter implements MealAiPort {
             float protein = (float) root.path("protein").asDouble(0.0);
             float carbs = (float) root.path("carbs").asDouble(0.0);
             float fats = (float) root.path("fats").asDouble(0.0);
-            log.info("Analisis completado: {} kcal", calories);
+            log.info("JSON parseado exitosamente: {} kcal, protein={}, carbs={}, fats={}",
+                    calories, protein, carbs, fats);
             return new NutritionProfile(calories, protein, carbs, fats);
         } catch (Exception e) {
-            log.error("Error parseando JSON de IA: {}", jsonText, e);
+            log.error("Error parseando JSON de IA. Raw: {}", jsonText, e);
             throw new RuntimeException("Error parseando respuesta de IA", e);
         }
     }

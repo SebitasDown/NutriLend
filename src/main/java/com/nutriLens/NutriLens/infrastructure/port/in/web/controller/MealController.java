@@ -25,6 +25,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -41,6 +43,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Tag(name = "Meal Analysis", description = "Endpoints para análisis de comidas con IA")
 public class MealController {
+
+        private static final Logger log = LoggerFactory.getLogger(MealController.class);
 
         private final AnalyzeMealUseCase analyzeMealUseCase;
         private final GetMealHistoryUseCase getMealHistoryUseCase;
@@ -70,10 +74,16 @@ public class MealController {
                         @Parameter(description = "Tipo de comida: BREAKFAST, LUNCH, DINNER, SNACK") @RequestParam("mealType") MealType mealType)
                         throws IOException {
 
+                log.info("=== POST /api/meals/analyze - userId={}, type={}, mealType={}, fileName={}, fileSize={} ===",
+                        session.getUserId(), type, mealType, file.getOriginalFilename(), file.getSize());
+
                 if (file.isEmpty()) {
+                        log.warn("Archivo vacio recibido para analisis");
                         return ResponseEntity.badRequest()
                                         .body(Map.of("error", "Por favor seleccione un archivo"));
                 }
+
+                log.info("Iniciando analisis de {} para usuario {}", type, session.getUserId());
 
                 MealAnalysis analysis = analyzeMealUseCase.analyze(
                                 session.getUserId(),
@@ -82,6 +92,9 @@ public class MealController {
                                 mealType);
 
                 MealAnalysisResponseDto responseDto = mealAnalysisDtoMapper.toDto(analysis);
+
+                log.info("Analisis completado exitosamente: id={}, {} kcal", analysis.getId(),
+                        analysis.getNutritionProfile().getCalories());
 
                 return ResponseEntity.ok(responseDto);
         }
