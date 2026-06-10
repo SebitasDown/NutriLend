@@ -3,6 +3,7 @@ package com.nutriLens.NutriLens.application.service.analyzeIa;
 import com.nutriLens.NutriLens.domain.model.MealAnalysis;
 import com.nutriLens.NutriLens.domain.port.in.analyzeIa.DeleteMealUseCase;
 import com.nutriLens.NutriLens.domain.port.out.MealAnalysisRepository;
+import com.nutriLens.NutriLens.domain.port.out.MealRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,9 +11,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeleteMealUseCaseImpl implements DeleteMealUseCase {
 
     private final MealAnalysisRepository mealAnalysisRepository;
+    private final MealRepository mealRepository;
 
-    public DeleteMealUseCaseImpl(MealAnalysisRepository mealAnalysisRepository) {
+    public DeleteMealUseCaseImpl(MealAnalysisRepository mealAnalysisRepository, MealRepository mealRepository) {
         this.mealAnalysisRepository = mealAnalysisRepository;
+        this.mealRepository = mealRepository;
     }
 
     @Override
@@ -26,5 +29,6 @@ public class DeleteMealUseCaseImpl implements DeleteMealUseCase {
         }
 
         mealAnalysisRepository.softDelete(analysisId);
+        mealRepository.softDeleteByUserAndTimestamp(userId, analysis.getAnalyzedAt());
     }
 }

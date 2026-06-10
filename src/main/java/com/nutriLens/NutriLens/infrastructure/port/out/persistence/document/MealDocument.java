@@ -23,4 +23,5 @@ public class MealDocument {
     private float carbs;
     private float fats;
     private Instant eatenAt;
+    private boolean deleted;
 }

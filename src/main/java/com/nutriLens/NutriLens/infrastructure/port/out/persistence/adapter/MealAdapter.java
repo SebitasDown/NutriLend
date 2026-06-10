@@ -8,6 +8,7 @@ import com.nutriLens.NutriLens.infrastructure.port.out.persistence.repository.Mo
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
@@ -32,9 +33,17 @@ public class MealAdapter implements MealRepository {
         var start = date.atStartOfDay().toInstant(offset);
         var end = date.atTime(LocalTime.MAX).toInstant(offset);
 
-        return repository.findByUserIdAndEatenAtBetween(userId, start, end)
+        return repository.findByUserIdAndEatenAtBetweenAndDeletedFalse(userId, start, end)
                 .stream()
                 .map(mapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public void softDeleteByUserAndTimestamp(Long userId, Instant eatenAt) {
+        repository.findByUserIdAndEatenAt(userId, eatenAt).ifPresent(doc -> {
+            doc.setDeleted(true);
+            repository.save(doc);
+        });
     }
 }

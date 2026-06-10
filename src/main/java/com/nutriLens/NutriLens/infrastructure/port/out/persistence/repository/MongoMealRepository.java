@@ -9,5 +9,7 @@ import java.util.List;
 
 @Repository
 public interface MongoMealRepository extends MongoRepository<MealDocument, String> {
-    List<MealDocument> findByUserIdAndEatenAtBetween(Long userId, Instant start, Instant end);
+    List<MealDocument> findByUserIdAndEatenAtBetweenAndDeletedFalse(Long userId, Instant start, Instant end);
+
+    java.util.Optional<MealDocument> findByUserIdAndEatenAt(Long userId, Instant eatenAt);
 }

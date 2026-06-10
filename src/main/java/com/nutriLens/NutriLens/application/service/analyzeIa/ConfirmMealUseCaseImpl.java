@@ -36,7 +36,8 @@ public class ConfirmMealUseCaseImpl implements ConfirmMealUseCase {
                 analysis.getNutritionProfile().getProtein(),
                 analysis.getNutritionProfile().getCarbs(),
                 analysis.getNutritionProfile().getFats(),
-                analysis.getAnalyzedAt());
+                analysis.getAnalyzedAt(),
+                false);
         mealRepository.save(meal);
     }
 }

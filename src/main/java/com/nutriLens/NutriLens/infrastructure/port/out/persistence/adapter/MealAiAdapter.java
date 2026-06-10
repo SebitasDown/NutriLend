@@ -45,6 +45,7 @@ public class MealAiAdapter implements MealAiPort {
     @Override
     public NutritionProfile analyze(byte[] fileByte, MediaType type) {
         if (type == MediaType.AUDIO) {
+            log.info("Iniciando analisis de audio ({} bytes)...", fileByte.length);
             return analyzeWithGemini(fileByte, type);
         }
         try {
@@ -67,7 +68,7 @@ public class MealAiAdapter implements MealAiPort {
             throw new IllegalStateException("Gemini no configurado");
         }
 
-        log.info("Iniciando analisis con Gemini...");
+        log.info("Iniciando analisis con Gemini para {}...", type);
         String base64Data = Base64.getEncoder().encodeToString(fileByte);
         String prompt = buildPrompt(type);
         String mimeType = (type == MediaType.IMAGE) ? "image/jpeg" : "audio/mp4";
@@ -75,11 +76,15 @@ public class MealAiAdapter implements MealAiPort {
         GeminiRequest.Part promptPart = GeminiRequest.Part.text(prompt);
         GeminiRequest.Part mediaPart = GeminiRequest.Part.image(mimeType, base64Data);
         GeminiRequest.Content content = new GeminiRequest.Content("user", List.of(promptPart, mediaPart));
+        GeminiRequest.GenerationConfig genConfig = (type == MediaType.IMAGE)
+                ? new GeminiRequest.GenerationConfig("application/json")
+                : null;
         GeminiRequest request = new GeminiRequest(
                 List.of(content),
                 null,
-                new GeminiRequest.GenerationConfig("application/json"));
+                genConfig);
 
+        log.debug("Enviando solicitud a Gemini (prompt length: {}, base64 length: {})", prompt.length(), base64Data.length());
         GeminiResponse response = geminiRestClient.post()
                 .uri(uriBuilder -> uriBuilder
                         .path("/v1beta/models/gemini-2.5-flash-lite:generateContent")
@@ -92,6 +97,7 @@ public class MealAiAdapter implements MealAiPort {
 
         if (response != null && !response.candidates().isEmpty()) {
             String jsonText = response.candidates().get(0).content().parts().get(0).text();
+            log.debug("Respuesta de Gemini: {}", jsonText);
             return parseNutritionJson(jsonText);
         }
 
@@ -136,9 +142,12 @@ public class MealAiAdapter implements MealAiPort {
                     """;
         }
         return """
-                Eres un experto en nutricion. Escucha la descripcion de la comida en el audio y estima los macros.
-                Responde UNICAMENTE con un objeto JSON valido con este formato:
+                Eres un experto en nutricion. Escucha atentamente la descripcion de la comida en el audio y estima los macros.
+                La persona describe lo que comio (ingredientes, porciones, tipo de comida). Usa esa informacion para calcular.
+                Si no puedes entender el audio claramente, estima basandote en el contexto de la descripcion.
+                Responde UNICAMENTE con un objeto JSON valido, sin texto adicional, con este formato exacto:
                 {"calories": numero entero, "protein": numero float, "carbs": numero float, "fats": numero float}
+                Ejemplo: {"calories": 450, "protein": 25.5, "carbs": 35.0, "fats": 18.0}
                 """;
     }
 

@@ -10,8 +10,9 @@ public class Meal {
     private float carbs;
     private float fats;
     private Instant eatenAt;
+    private boolean deleted;
 
-    public Meal(String id, Long userId, int calories, float protein, float carbs, float fats, Instant eatenAt) {
+    public Meal(String id, Long userId, int calories, float protein, float carbs, float fats, Instant eatenAt, boolean deleted) {
         this.id = id;
         this.userId = userId;
         this.calories = calories;
@@ -19,6 +20,7 @@ public class Meal {
         this.carbs = carbs;
         this.fats = fats;
         this.eatenAt = eatenAt;
+        this.deleted = deleted;
     }
 
     public String getId() {
@@ -47,5 +49,9 @@ public class Meal {
 
     public Instant getEatenAt() {
         return eatenAt;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
     }
 }
