@@ -11,6 +11,7 @@ import com.nutriLens.NutriLens.domain.port.in.analyzeIa.DeleteMealUseCase;
 import com.nutriLens.NutriLens.domain.port.in.analyzeIa.GetMealBreakdownUseCase;
 import com.nutriLens.NutriLens.domain.port.in.analyzeIa.GetMealHistoryUseCase;
 import com.nutriLens.NutriLens.domain.port.in.auth.UserSession;
+import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.request.AnalyzeTextRequest;
 import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.response.DailyNutritionResponseDto;
 import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.response.MealAnalysisResponseDto;
 import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.response.MealBreakdownResponseDto;
@@ -79,6 +80,42 @@ public class MealController {
                                 file.getBytes(),
                                 type,
                                 mealType);
+
+                MealAnalysisResponseDto responseDto = mealAnalysisDtoMapper.toDto(analysis);
+
+                return ResponseEntity.ok(responseDto);
+        }
+
+        @Operation(
+                summary = "Analizar comida por texto",
+                description = "Analiza una descripcion textual de una comida para obtener informacion nutricional mediante IA. " +
+                        "La IA detectara los alimentos y calculara calorias, proteinas, carbohidratos y grasas a partir de la descripcion."
+        )
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "200", description = "Analisis completado exitosamente",
+                        content = @Content(schema = @Schema(implementation = MealAnalysisResponseDto.class))),
+                @ApiResponse(responseCode = "400", description = "Descripcion vacia"),
+                @ApiResponse(responseCode = "401", description = "No autorizado - Token JWT invalido o expirado"),
+                @ApiResponse(responseCode = "500", description = "Error al procesar la descripcion con IA")
+        })
+        @PostMapping("/analyze-text")
+        public ResponseEntity<?> analyzeMealByText(
+                        @Parameter(hidden = true) @AuthenticationPrincipal UserSession session,
+                        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                description = "Descripcion textual de la comida y tipo de comida",
+                                required = true,
+                                content = @Content(schema = @Schema(implementation = AnalyzeTextRequest.class)))
+                        @RequestBody AnalyzeTextRequest request) {
+
+                if (request.getDescription() == null || request.getDescription().isBlank()) {
+                        return ResponseEntity.badRequest()
+                                        .body(Map.of("error", "Por favor proporcione una descripcion de la comida"));
+                }
+
+                MealAnalysis analysis = analyzeMealUseCase.analyzeText(
+                                session.getUserId(),
+                                request.getDescription(),
+                                request.getMealType());
 
                 MealAnalysisResponseDto responseDto = mealAnalysisDtoMapper.toDto(analysis);
 

@@ -61,6 +61,22 @@ public class MealAiAdapter implements MealAiPort {
         }
     }
 
+    @Override
+    public NutritionProfile analyzeText(String description) {
+        log.info("Iniciando analisis de texto...");
+        try {
+            return analyzeTextWithGemini(description);
+        } catch (Exception e) {
+            log.warn("Gemini fallo en analisis de texto, intentando con Groq: {}", e.getMessage());
+            try {
+                return analyzeTextWithGroq(description);
+            } catch (Exception ex) {
+                log.error("Ambos proveedores de IA fallaron en analisis de texto", ex);
+                throw new RuntimeException("Error en analisis de texto IA: " + ex.getMessage(), ex);
+            }
+        }
+    }
+
     private NutritionProfile analyzeWithGemini(byte[] fileByte, MediaType type) {
         String apiKey = geminiConfig.getApiKey();
         if (apiKey == null || apiKey.isBlank()) {
@@ -133,6 +149,71 @@ public class MealAiAdapter implements MealAiPort {
         throw new RuntimeException("Groq no devolvio sugerencias validas");
     }
 
+    private NutritionProfile analyzeTextWithGemini(String description) {
+        String apiKey = geminiConfig.getApiKey();
+        if (apiKey == null || apiKey.isBlank()) {
+            log.warn("Gemini API key no configurada, saltando...");
+            throw new IllegalStateException("Gemini no configurado");
+        }
+
+        log.info("Iniciando analisis de texto con Gemini...");
+        String prompt = buildTextPrompt();
+
+        GeminiRequest.Part promptPart = GeminiRequest.Part.text(prompt);
+        GeminiRequest.Part descPart = GeminiRequest.Part.text(description);
+        GeminiRequest.Content content = new GeminiRequest.Content("user", List.of(promptPart, descPart));
+        GeminiRequest request = new GeminiRequest(
+                List.of(content),
+                null,
+                new GeminiRequest.GenerationConfig("application/json"));
+
+        GeminiResponse response = geminiRestClient.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/v1beta/models/gemini-2.5-flash-lite:generateContent")
+                        .queryParam("key", apiKey)
+                        .build())
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .body(request)
+                .retrieve()
+                .body(GeminiResponse.class);
+
+        if (response != null && !response.candidates().isEmpty()) {
+            String jsonText = response.candidates().get(0).content().parts().get(0).text();
+            log.debug("Respuesta de Gemini (texto): {}", jsonText);
+            return parseNutritionJson(jsonText);
+        }
+
+        throw new RuntimeException("Gemini no devolvio sugerencias validas para el texto");
+    }
+
+    private NutritionProfile analyzeTextWithGroq(String description) {
+        String apiKey = groqConfig.getApiKey();
+        if (apiKey == null || apiKey.isBlank()) {
+            log.warn("Groq API key no configurada, saltando...");
+            throw new IllegalStateException("Groq no configurado");
+        }
+
+        log.info("Iniciando analisis de texto con Groq...");
+        String prompt = buildTextPrompt();
+
+        GroqRequest request = GroqRequest.analysis("llama-3.3-70b-versatile",
+                prompt + "\n\nDescripcion de la comida: " + description);
+
+        GroqResponse response = groqRestClient.post()
+                .uri("/chat/completions")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .body(request)
+                .retrieve()
+                .body(GroqResponse.class);
+
+        if (response != null && !response.choices().isEmpty()) {
+            String content = response.choices().get(0).message().content();
+            return parseNutritionJson(content);
+        }
+
+        throw new RuntimeException("Groq no devolvio sugerencias validas para el texto");
+    }
+
     private String buildPrompt(MediaType type) {
         if (type == MediaType.IMAGE) {
             return """
@@ -145,6 +226,16 @@ public class MealAiAdapter implements MealAiPort {
                 Eres un experto en nutricion. Escucha atentamente la descripcion de la comida en el audio y estima los macros.
                 La persona describe lo que comio (ingredientes, porciones, tipo de comida). Usa esa informacion para calcular.
                 Si no puedes entender el audio claramente, estima basandote en el contexto de la descripcion.
+                Responde UNICAMENTE con un objeto JSON valido, sin texto adicional, con este formato exacto:
+                {"calories": numero entero, "protein": numero float, "carbs": numero float, "fats": numero float}
+                Ejemplo: {"calories": 450, "protein": 25.5, "carbs": 35.0, "fats": 18.0}
+                """;
+    }
+
+    private String buildTextPrompt() {
+        return """
+                Eres un experto en nutricion. Analiza la descripcion textual de una comida y estima los macros.
+                La persona describe lo que comio (ingredientes, porciones, tipo de comida). Usa esa informacion para calcular los valores nutricionales.
                 Responde UNICAMENTE con un objeto JSON valido, sin texto adicional, con este formato exacto:
                 {"calories": numero entero, "protein": numero float, "carbs": numero float, "fats": numero float}
                 Ejemplo: {"calories": 450, "protein": 25.5, "carbs": 35.0, "fats": 18.0}

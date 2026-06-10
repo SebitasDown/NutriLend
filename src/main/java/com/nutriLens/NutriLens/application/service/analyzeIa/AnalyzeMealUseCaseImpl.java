@@ -52,4 +52,25 @@ public class AnalyzeMealUseCaseImpl implements AnalyzeMealUseCase {
 
                 return mealAnalysisRepository.save(analysis);
         }
+
+        @Override
+        public MealAnalysis analyzeText(Long userId, String description, MealType mealType) {
+                NutritionProfile nutritionProfile = mealAiPort.analyzeText(description);
+
+                MediaInput mediaInput = new MediaInput(
+                                MediaType.TEXT,
+                                null);
+
+                Instant now = Instant.now();
+                MealAnalysis analysis = new MealAnalysis(
+                                null,
+                                userId,
+                                mediaInput,
+                                nutritionProfile,
+                                mealType,
+                                now,
+                                false);
+
+                return mealAnalysisRepository.save(analysis);
+        }
 }

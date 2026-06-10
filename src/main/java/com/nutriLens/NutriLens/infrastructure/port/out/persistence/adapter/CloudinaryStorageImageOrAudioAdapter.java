@@ -20,11 +20,13 @@ public class CloudinaryStorageImageOrAudioAdapter implements MediaStoragePort {
             String resourceType = switch (type) {
                 case IMAGE -> "image";
                 case AUDIO -> "video"; // Cloudinary usa "video" para audio
+                case TEXT -> throw new UnsupportedOperationException("No se puede subir texto a Cloudinary");
             };
 
             String folder = switch (type) {
                 case IMAGE -> "meal_images";
                 case AUDIO -> "meal_audio";
+                case TEXT -> throw new UnsupportedOperationException("No se puede subir texto a Cloudinary");
             };
 
             Map<?, ?> result = cloudinary.uploader().upload(

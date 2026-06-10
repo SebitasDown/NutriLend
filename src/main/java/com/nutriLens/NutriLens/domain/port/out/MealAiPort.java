@@ -7,4 +7,6 @@ import com.nutriLens.NutriLens.domain.model.NutritionProfile;
 public interface MealAiPort {
 
     NutritionProfile analyze (byte[] fileByte, MediaType type);
+
+    NutritionProfile analyzeText (String description);
 }
