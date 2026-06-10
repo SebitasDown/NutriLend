@@ -34,7 +34,7 @@ public class MealAnalysisAdapter implements MealAnalysisRepository {
 
     @Override
     public List<MealAnalysis> findByUserId(Long userId) {
-        return repository.findByUserIdOrderByAnalyzedAtDesc(userId)
+        return repository.findByUserIdAndDeletedFalseOrderByAnalyzedAtDesc(userId)
                 .stream()
                 .map(mapper::toDomain)
                 .toList();
@@ -42,9 +42,17 @@ public class MealAnalysisAdapter implements MealAnalysisRepository {
 
     @Override
     public List<MealAnalysis> findByUserAndDateRange(Long userId, Instant start, Instant end) {
-        return repository.findByUserIdAndAnalyzedAtBetween(userId, start, end)
+        return repository.findByUserIdAndAnalyzedAtBetweenAndDeletedFalse(userId, start, end)
                 .stream()
                 .map(mapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public void softDelete(String id) {
+        repository.findById(id).ifPresent(doc -> {
+            doc.setDeleted(true);
+            repository.save(doc);
+        });
     }
 }

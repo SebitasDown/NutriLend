@@ -23,4 +23,5 @@ public class MealAnalysisDocument {
     private NutritionProfileDocument nutritionProfile;
     private MealType mealType;
     private Instant analyzedAt;
+    private boolean deleted;
 }

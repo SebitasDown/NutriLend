@@ -9,15 +9,17 @@ public class MealAnalysis {
     private NutritionProfile nutritionProfile;
     private MealType mealType;
     private Instant analyzedAt;
+    private boolean deleted;
 
     public MealAnalysis(String id, Long userId, MediaInput media, NutritionProfile nutritionProfile, MealType mealType,
-            Instant analyzedAt) {
+            Instant analyzedAt, boolean deleted) {
         this.id = id;
         this.userId = userId;
         this.media = media;
         this.nutritionProfile = nutritionProfile;
         this.mealType = mealType;
         this.analyzedAt = analyzedAt;
+        this.deleted = deleted;
     }
 
     public String getId() {
@@ -46,5 +48,13 @@ public class MealAnalysis {
 
     public Instant getAnalyzedAt() {
         return analyzedAt;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 }

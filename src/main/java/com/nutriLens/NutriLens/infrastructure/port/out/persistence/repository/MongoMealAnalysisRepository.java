@@ -1,5 +1,6 @@
 package com.nutriLens.NutriLens.infrastructure.port.out.persistence.repository;
 
+import com.nutriLens.NutriLens.domain.model.MealType;
 import com.nutriLens.NutriLens.infrastructure.port.out.persistence.document.MealAnalysisDocument;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -9,7 +10,9 @@ import java.util.List;
 
 @Repository
 public interface MongoMealAnalysisRepository extends MongoRepository<MealAnalysisDocument, String> {
-    List<MealAnalysisDocument> findByUserIdOrderByAnalyzedAtDesc(Long userId);
+    List<MealAnalysisDocument> findByUserIdAndDeletedFalseOrderByAnalyzedAtDesc(Long userId);
 
-    List<MealAnalysisDocument> findByUserIdAndAnalyzedAtBetween(Long userId, Instant start, Instant end);
+    List<MealAnalysisDocument> findByUserIdAndAnalyzedAtBetweenAndDeletedFalse(Long userId, Instant start, Instant end);
+
+    List<MealAnalysisDocument> findByUserIdAndAnalyzedAtBetweenAndDeletedFalseAndMealType(Long userId, Instant start, Instant end, MealType mealType);
 }

@@ -15,4 +15,6 @@ public interface MealAnalysisRepository {
     List<MealAnalysis> findByUserId(Long userId);
 
     List<MealAnalysis> findByUserAndDateRange(Long userId, Instant start, Instant end);
+
+    void softDelete(String id);
 }

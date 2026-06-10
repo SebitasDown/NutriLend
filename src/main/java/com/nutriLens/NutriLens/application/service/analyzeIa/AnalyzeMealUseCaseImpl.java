@@ -22,14 +22,12 @@ public class AnalyzeMealUseCaseImpl implements AnalyzeMealUseCase {
         private final MediaStoragePort mediaStoragePort;
         private final MealAiPort mealAiPort;
         private final MealAnalysisRepository mealAnalysisRepository;
-        private final MealRepository mealRepository;
 
         public AnalyzeMealUseCaseImpl(MediaStoragePort mediaStoragePort, MealAiPort mealAiPort,
-                        MealAnalysisRepository mealAnalysisRepository, MealRepository mealRepository) {
+                        MealAnalysisRepository mealAnalysisRepository) {
                 this.mediaStoragePort = mediaStoragePort;
                 this.mealAiPort = mealAiPort;
                 this.mealAnalysisRepository = mealAnalysisRepository;
-                this.mealRepository = mealRepository;
         }
 
         @Override
@@ -49,21 +47,9 @@ public class AnalyzeMealUseCaseImpl implements AnalyzeMealUseCase {
                                 mediaInput,
                                 nutritionProfile,
                                 mealType,
-                                now);
+                                now,
+                                false);
 
-                MealAnalysis savedAnalysis = mealAnalysisRepository.save(analysis);
-
-                // También guardamos la comida en el diario nutricional
-                Meal meal = new Meal(
-                                null,
-                                userId,
-                                nutritionProfile.getCalories(),
-                                nutritionProfile.getProtein(),
-                                nutritionProfile.getCarbs(),
-                                nutritionProfile.getFats(),
-                                now);
-                mealRepository.save(meal);
-
-                return savedAnalysis;
+                return mealAnalysisRepository.save(analysis);
         }
 }

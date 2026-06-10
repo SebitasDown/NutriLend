@@ -6,10 +6,14 @@ import com.nutriLens.NutriLens.domain.model.MediaType;
 import com.nutriLens.NutriLens.domain.model.MealType;
 import com.nutriLens.NutriLens.domain.port.in.NutritionProfile.GetDailyNutritionUseCase;
 import com.nutriLens.NutriLens.domain.port.in.analyzeIa.AnalyzeMealUseCase;
+import com.nutriLens.NutriLens.domain.port.in.analyzeIa.ConfirmMealUseCase;
+import com.nutriLens.NutriLens.domain.port.in.analyzeIa.DeleteMealUseCase;
+import com.nutriLens.NutriLens.domain.port.in.analyzeIa.GetMealBreakdownUseCase;
 import com.nutriLens.NutriLens.domain.port.in.analyzeIa.GetMealHistoryUseCase;
 import com.nutriLens.NutriLens.domain.port.in.auth.UserSession;
 import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.response.DailyNutritionResponseDto;
 import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.response.MealAnalysisResponseDto;
+import com.nutriLens.NutriLens.infrastructure.port.in.web.dto.response.MealBreakdownResponseDto;
 import com.nutriLens.NutriLens.infrastructure.port.in.web.mapper.MealAnalysisDtoMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -41,6 +45,9 @@ public class MealController {
         private final GetMealHistoryUseCase getMealHistoryUseCase;
         private final GetDailyNutritionUseCase getDailyNutritionUseCase;
         private final MealAnalysisDtoMapper mealAnalysisDtoMapper;
+        private final ConfirmMealUseCase confirmMealUseCase;
+        private final DeleteMealUseCase deleteMealUseCase;
+        private final GetMealBreakdownUseCase getMealBreakdownUseCase;
 
         @Operation(
                 summary = "Analizar comida",
@@ -126,5 +133,44 @@ public class MealController {
                                 dailyNutrition.getCalorieProgressPercentage());
 
                 return ResponseEntity.ok(response);
+        }
+
+        @Operation(
+                summary = "Confirmar y guardar comida en el diario",
+                description = "Confirma un análisis y lo guarda en el diario nutricional del usuario"
+        )
+        @PostMapping("/confirm/{analysisId}")
+        public ResponseEntity<Void> confirmMeal(
+                        @Parameter(hidden = true) @AuthenticationPrincipal UserSession session,
+                        @Parameter(description = "ID del análisis a confirmar") @PathVariable String analysisId) {
+                confirmMealUseCase.confirm(analysisId, session.getUserId());
+                return ResponseEntity.ok().build();
+        }
+
+        @Operation(
+                summary = "Eliminar análisis de comida (soft-delete)",
+                description = "Marca un análisis como eliminado sin borrarlo de la base de datos"
+        )
+        @DeleteMapping("/{id}")
+        public ResponseEntity<Void> deleteMeal(
+                        @Parameter(hidden = true) @AuthenticationPrincipal UserSession session,
+                        @Parameter(description = "ID del análisis a eliminar") @PathVariable String id) {
+                deleteMealUseCase.delete(id, session.getUserId());
+                return ResponseEntity.ok().build();
+        }
+
+        @Operation(
+                summary = "Obtener desglose nutricional por tipo de comida",
+                description = "Retorna las calorías, proteínas, carbohidratos y grasas agrupados por desayuno, almuerzo, cena y snack"
+        )
+        @GetMapping("/breakdown")
+        public ResponseEntity<MealBreakdownResponseDto> getMealBreakdown(
+                        @Parameter(hidden = true) @AuthenticationPrincipal UserSession session,
+                        @Parameter(description = "Fecha a consultar (yyyy-MM-dd)") @RequestParam(value = "date", required = false) LocalDate date,
+                        @Parameter(description = "Offset de zona horaria") @RequestParam(value = "timezoneOffset", defaultValue = "Z") String timezoneOffset) {
+                ZoneOffset offset = ZoneOffset.of(timezoneOffset);
+                LocalDate targetDate = (date != null) ? date : LocalDate.now(offset);
+                MealBreakdownResponseDto breakdown = getMealBreakdownUseCase.execute(session.getUserId(), targetDate, offset);
+                return ResponseEntity.ok(breakdown);
         }
 }
