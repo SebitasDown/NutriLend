@@ -44,6 +44,9 @@ public class MealAiAdapter implements MealAiPort {
 
     @Override
     public NutritionProfile analyze(byte[] fileByte, MediaType type) {
+        if (type == MediaType.AUDIO) {
+            return analyzeWithGemini(fileByte, type);
+        }
         try {
             return analyzeWithGemini(fileByte, type);
         } catch (Exception e) {
@@ -67,7 +70,7 @@ public class MealAiAdapter implements MealAiPort {
         log.info("Iniciando analisis con Gemini...");
         String base64Data = Base64.getEncoder().encodeToString(fileByte);
         String prompt = buildPrompt(type);
-        String mimeType = (type == MediaType.IMAGE) ? "image/jpeg" : "audio/mp3";
+        String mimeType = (type == MediaType.IMAGE) ? "image/jpeg" : "audio/mp4";
 
         GeminiRequest.Part promptPart = GeminiRequest.Part.text(prompt);
         GeminiRequest.Part mediaPart = GeminiRequest.Part.image(mimeType, base64Data);
